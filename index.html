@@ -219,6 +219,109 @@
     0% { opacity: 1; transform: translateY(0) rotate(0deg); }
     100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
   }
+
+  .celebration-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s;
+  }
+
+  .celebration-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .celebration-overlay .trophy {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: trophyBounce 0.8s ease infinite alternate;
+  }
+
+  @keyframes trophyBounce {
+    0% { transform: scale(1) rotate(-5deg); }
+    100% { transform: scale(1.1) rotate(5deg); }
+  }
+
+  .celebration-overlay .congrats-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    letter-spacing: 0.06em;
+    color: #ffd700;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    transform: scale(0.5);
+    animation: popIn 0.5s ease 0.3s forwards;
+  }
+
+  .celebration-overlay .winner-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    letter-spacing: 0.04em;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.5s ease 0.6s forwards;
+  }
+
+  .celebration-overlay .prize-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    color: #ffffff;
+    text-align: center;
+    line-height: 1.6;
+    max-width: 500px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.5s ease 0.9s forwards;
+  }
+
+  .celebration-overlay .prize-highlight {
+    color: #ffd700;
+    font-weight: 800;
+  }
+
+  .celebration-overlay .close-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    padding: 12px 40px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-top: 2rem;
+    opacity: 0;
+    animation: slideUp 0.5s ease 1.2s forwards;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .celebration-overlay .close-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.6);
+  }
+
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes slideUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
 </style>
 </head>
 <body>
@@ -277,6 +380,16 @@
     <div class="dot"></div>
     <span>IMOB</span>
   </div>
+</div>
+
+<div class="celebration-overlay" id="celebration">
+  <div class="trophy">🏆</div>
+  <div class="congrats-title">Parabéns!</div>
+  <div class="winner-name" id="winnerName"></div>
+  <div class="prize-text">
+    Você ganhou uma<br><span class="prize-highlight">camisa oficial da Seleção Brasileira!</span>
+  </div>
+  <button class="close-btn" id="closeBtn">Voltar</button>
 </div>
 
 <script>
@@ -344,7 +457,7 @@
   drawWheel(angle);
 
   function launchConfetti() {
-    const colors = ["#ffffff", "#cccccc", "#888888", "#aaaaaa", "#dddddd"];
+    const colors = ["#009c3b", "#ffdf00", "#002776", "#ffffff", "#009c3b", "#ffdf00"];
     for (let i = 0; i < 50; i++) {
       const piece = document.createElement("div");
       piece.className = "confetti-piece";
@@ -405,12 +518,25 @@
 
         const pointerAngle = (3 * Math.PI / 2 - normalizedAngle + Math.PI * 2) % (Math.PI * 2);
         const winnerIndex = pointerAngle < Math.PI ? 0 : 1;
-        resultEl.textContent = names[winnerIndex].toUpperCase();
+        const winnerName = names[winnerIndex];
+        resultEl.textContent = winnerName.toUpperCase();
         resultEl.classList.add("show");
         launchConfetti();
+
+        setTimeout(function() {
+          document.getElementById("winnerName").textContent = winnerName.toUpperCase();
+          document.getElementById("celebration").classList.add("active");
+          launchConfetti();
+          setTimeout(function() { launchConfetti(); }, 800);
+          setTimeout(function() { launchConfetti(); }, 1600);
+        }, 1500);
       }
     }
     requestAnimationFrame(animate);
+  });
+
+  document.getElementById("closeBtn").addEventListener("click", function() {
+    document.getElementById("celebration").classList.remove("active");
   });
 })();
 </script>
