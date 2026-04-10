@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteio - Baricup 26</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    background: #1a1a1a;
+    color: #ffffff;
+    overflow: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle 2px at center, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 18px 18px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 60% at 30% 20%, rgba(255,255,255,0.04), transparent),
+      radial-gradient(ellipse 50% 50% at 70% 80%, rgba(255,255,255,0.03), transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .soccer-icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 4px;
+  }
+
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+
+  .subtitle {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+
+  .divider {
+    width: 220px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    margin: 0.2rem 0;
+  }
+
+  .wheel-wrapper {
+    position: relative;
+    width: 340px;
+    height: 340px;
+  }
+
+  .wheel-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: -1;
+  }
+
+  .wheel-wrapper.spinning::before {
+    opacity: 1;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 28px solid #ffffff;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+    transition: transform 0.1s;
+  }
+
+  .pointer.bounce {
+    animation: pointerBounce 0.12s ease;
+  }
+
+  @keyframes pointerBounce {
+    0%, 100% { transform: translateX(-50%) scaleY(1); }
+    50% { transform: translateX(-50%) scaleY(0.75); }
+  }
+
+  canvas {
+    border-radius: 50%;
+    box-shadow:
+      0 0 0 5px rgba(255,255,255,0.15),
+      0 0 0 8px rgba(255,255,255,0.05),
+      0 12px 48px rgba(0,0,0,0.6);
+  }
+
+  .result {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.6rem;
+    letter-spacing: 0.06em;
+    min-height: 3rem;
+    text-align: center;
+    color: #ffffff;
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+
+  .result.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .spin-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.12em;
+    padding: 14px 56px;
+    border: 2px solid #ffffff;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    color: #ffffff;
+    text-transform: uppercase;
+    transition: transform 0.2s, background 0.2s, color 0.2s;
+  }
+
+  .spin-btn:hover:not(:disabled) {
+    background: #ffffff;
+    color: #1a1a1a;
+    transform: scale(1.03);
+  }
+
+  .spin-btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .spin-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin-top: 0.5rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 0.15em;
+    opacity: 0.4;
+    text-transform: uppercase;
+  }
+
+  .footer .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #ffffff;
+  }
+
+  .confetti-piece {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo-area">
+    <svg class="soccer-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="ballClip"><circle cx="50" cy="50" r="44"/></clipPath></defs>
+      <circle cx="50" cy="50" r="44" fill="#fff"/>
+      <g clip-path="url(#ballClip)">
+        <polygon points="50.0,38.0 61.4,46.3 57.1,59.7 42.9,59.7 38.6,46.3" fill="#1a1a1a"/>
+        <polygon points="50.0,30.5 42.9,25.3 45.6,16.9 54.4,16.9 57.1,25.3" fill="#1a1a1a"/>
+        <polygon points="68.5,44.0 71.3,35.6 80.1,35.6 82.8,44.0 75.7,49.2" fill="#1a1a1a"/>
+        <polygon points="61.5,65.8 70.3,65.8 73.0,74.2 65.9,79.3 58.7,74.2" fill="#1a1a1a"/>
+        <polygon points="38.5,65.8 41.3,74.2 34.1,79.3 27.0,74.2 29.7,65.8" fill="#1a1a1a"/>
+        <polygon points="31.5,44.0 24.3,49.2 17.2,44.0 19.9,35.6 28.7,35.6" fill="#1a1a1a"/>
+        <line x1="50.0" y1="38.0" x2="50.0" y2="30.5" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="61.4" y1="46.3" x2="68.5" y2="44.0" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="57.1" y1="59.7" x2="61.5" y2="65.8" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="42.9" y1="59.7" x2="38.5" y2="65.8" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="38.6" y1="46.3" x2="31.5" y2="44.0" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="57.1" y1="25.3" x2="71.3" y2="35.6" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="75.7" y1="49.2" x2="70.3" y2="65.8" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="58.7" y1="74.2" x2="41.3" y2="74.2" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="29.7" y1="65.8" x2="24.3" y2="49.2" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="28.7" y1="35.6" x2="42.9" y2="25.3" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="45.6" y1="16.9" x2="44.3" y2="7.4" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="54.4" y1="16.9" x2="55.7" y2="7.4" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="80.1" y1="35.6" x2="88.8" y2="31.4" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="82.8" y1="44.0" x2="92.3" y2="42.2" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="73.0" y1="74.2" x2="79.7" y2="81.1" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="65.9" y1="79.3" x2="70.5" y2="87.8" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="34.1" y1="79.3" x2="29.5" y2="87.8" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="27.0" y1="74.2" x2="20.3" y2="81.1" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="17.2" y1="44.0" x2="7.7" y2="42.2" stroke="#1a1a1a" stroke-width="1.3"/>
+        <line x1="19.9" y1="35.6" x2="11.2" y2="31.4" stroke="#1a1a1a" stroke-width="1.3"/>
+      </g>
+      <circle cx="50" cy="50" r="44" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    </svg>
+    <div class="title">Baricup 26</div>
+    <div class="divider"></div>
+    <div class="subtitle">Sorteio oficial</div>
+  </div>
+
+  <div class="wheel-wrapper" id="wheelWrapper">
+    <div class="pointer" id="pointer"></div>
+    <canvas id="wheel" width="340" height="340"></canvas>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <button class="spin-btn" id="spinBtn">Girar a roleta</button>
+
+  <div class="footer">
+    <span>CWB</span>
+    <div class="dot"></div>
+    <span>IMOB</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  const names = ["Ingryd Nova", "Isabella Braga"];
+
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const btn = document.getElementById("spinBtn");
+  const resultEl = document.getElementById("result");
+  const wrapper = document.getElementById("wheelWrapper");
+  const pointer = document.getElementById("pointer");
+
+  const cx = 170, cy = 170, r = 160;
+  let angle = 0;
+  let spinning = false;
+
+  function drawWheel(rot) {
+    ctx.clearRect(0, 0, 340, 340);
+    const sliceAngle = Math.PI;
+
+    for (let i = 0; i < 2; i++) {
+      const start = rot + i * sliceAngle;
+      const end = start + sliceAngle;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = i === 0 ? "#ffffff" : "#2a2a2a";
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + sliceAngle / 2);
+      ctx.fillStyle = i === 0 ? "#1a1a1a" : "#ffffff";
+      ctx.font = "600 18px 'Bebas Neue', sans-serif";
+      ctx.letterSpacing = "2px";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(names[i].toUpperCase(), r * 0.5, 0);
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+    ctx.fillStyle = "#1a1a1a";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+  }
+
+  drawWheel(angle);
+
+  function launchConfetti() {
+    const colors = ["#ffffff", "#cccccc", "#888888", "#aaaaaa", "#dddddd"];
+    for (let i = 0; i < 50; i++) {
+      const piece = document.createElement("div");
+      piece.className = "confetti-piece";
+      piece.style.left = Math.random() * 100 + "vw";
+      piece.style.top = -10 + "px";
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.width = (4 + Math.random() * 8) + "px";
+      piece.style.height = (4 + Math.random() * 8) + "px";
+      piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "1px";
+      piece.style.animationDuration = (2 + Math.random() * 2.5) + "s";
+      piece.style.animationDelay = Math.random() * 0.6 + "s";
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5500);
+    }
+  }
+
+  btn.addEventListener("click", function () {
+    if (spinning) return;
+    spinning = true;
+    resultEl.classList.remove("show");
+    resultEl.textContent = "";
+    btn.disabled = true;
+    wrapper.classList.add("spinning");
+
+    const totalRotation = Math.PI * 2 * (8 + Math.random() * 6) + Math.random() * Math.PI * 2;
+    const duration = 5000;
+    const startTime = performance.now();
+    const startAngle = angle;
+
+    function easeOut(t) {
+      return 1 - Math.pow(1 - t, 4);
+    }
+
+    let lastSlice = -1;
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOut(progress);
+      angle = startAngle + totalRotation * eased;
+      drawWheel(angle);
+
+      const normalizedAngle = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const currentSlice = normalizedAngle < Math.PI ? 0 : 1;
+      if (lastSlice !== -1 && currentSlice !== lastSlice && progress < 0.85) {
+        pointer.classList.remove("bounce");
+        void pointer.offsetWidth;
+        pointer.classList.add("bounce");
+      }
+      lastSlice = currentSlice;
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        spinning = false;
+        btn.disabled = false;
+        wrapper.classList.remove("spinning");
+
+        const pointerAngle = (3 * Math.PI / 2 - normalizedAngle + Math.PI * 2) % (Math.PI * 2);
+        const winnerIndex = pointerAngle < Math.PI ? 0 : 1;
+        resultEl.textContent = names[winnerIndex].toUpperCase();
+        resultEl.classList.add("show");
+        launchConfetti();
+      }
+    }
+    requestAnimationFrame(animate);
+  });
+})();
+</script>
+</body>
+</html>
