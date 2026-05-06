@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sorteio - Baricup 26</title>
+<title>Roleta Cassino - Baricup 26</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,8 +15,8 @@
     align-items: center;
     justify-content: center;
     font-family: 'Outfit', sans-serif;
-    background: #1a1a1a;
-    color: #ffffff;
+    background: #111;
+    color: #fff;
     overflow: hidden;
     position: relative;
   }
@@ -25,29 +25,16 @@
     content: '';
     position: fixed;
     inset: 0;
-    background:
-      radial-gradient(circle 2px at center, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background: radial-gradient(circle 2px at center, rgba(255,255,255,0.06) 1px, transparent 1px);
     background-size: 18px 18px;
     pointer-events: none;
-    z-index: 0;
-  }
-
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 70% 60% at 30% 20%, rgba(255,255,255,0.04), transparent),
-      radial-gradient(ellipse 50% 50% at 70% 80%, rgba(255,255,255,0.03), transparent);
-    pointer-events: none;
-    z-index: 0;
   }
 
   .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.2rem;
     position: relative;
     z-index: 1;
   }
@@ -56,174 +43,150 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .soccer-icon {
-    width: 52px;
-    height: 52px;
-    margin-bottom: 4px;
+    gap: 0.2rem;
+    margin-bottom: 0.3rem;
   }
 
   .title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.8rem;
+    font-size: 2.4rem;
     letter-spacing: 0.08em;
     line-height: 1;
     text-transform: uppercase;
-    color: #ffffff;
   }
 
   .subtitle {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
-    opacity: 0.5;
+    opacity: 0.4;
   }
 
   .divider {
-    width: 220px;
+    width: 200px;
     height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    margin: 0.2rem 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    margin: 0.1rem 0;
   }
 
-  .wheel-wrapper {
+  .wheel-area {
     position: relative;
-    width: 340px;
-    height: 340px;
+    width: 380px;
+    height: 380px;
   }
 
-  .wheel-wrapper::before {
-    content: '';
+  canvas#rouletteCanvas {
     position: absolute;
-    inset: -20px;
+    inset: 0;
+    z-index: 2;
+  }
+
+  .players-area {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .player-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 1.8rem;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.1);
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+    min-width: 140px;
+  }
+
+  .player-card.white-card { background: rgba(255,255,255,0.05); }
+  .player-card.black-card { background: rgba(0,0,0,0.3); }
+
+  .player-card .color-dot {
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.06), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.5s;
-    z-index: -1;
+    border: 2px solid rgba(255,255,255,0.3);
   }
 
-  .wheel-wrapper.spinning::before {
-    opacity: 1;
+  .player-card.white-card .color-dot { background: #ffffff; }
+  .player-card.black-card .color-dot { background: #1a1a1a; }
+
+  .player-card .player-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
-  .pointer {
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 28px solid #ffffff;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
-    transition: transform 0.1s;
+  .player-card.winner {
+    border-color: #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+    transform: scale(1.05);
   }
 
-  .pointer.bounce {
-    animation: pointerBounce 0.12s ease;
-  }
-
-  @keyframes pointerBounce {
-    0%, 100% { transform: translateX(-50%) scaleY(1); }
-    50% { transform: translateX(-50%) scaleY(0.75); }
-  }
-
-  canvas {
-    border-radius: 50%;
-    box-shadow:
-      0 0 0 5px rgba(255,255,255,0.15),
-      0 0 0 8px rgba(255,255,255,0.05),
-      0 12px 48px rgba(0,0,0,0.6);
+  .vs-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    opacity: 0.3;
+    letter-spacing: 0.1em;
   }
 
   .result {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.6rem;
+    font-size: 1.8rem;
     letter-spacing: 0.06em;
-    min-height: 3rem;
+    min-height: 2.4rem;
     text-align: center;
-    color: #ffffff;
+    color: #ffd700;
     opacity: 0;
-    transform: translateY(8px) scale(0.95);
+    transform: translateY(8px);
     transition: opacity 0.5s, transform 0.5s;
   }
 
-  .result.show {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  .result.show { opacity: 1; transform: translateY(0); }
 
   .spin-btn {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     letter-spacing: 0.12em;
-    padding: 14px 56px;
-    border: 2px solid #ffffff;
+    padding: 12px 48px;
+    border: 2px solid #fff;
     border-radius: 4px;
     cursor: pointer;
     background: transparent;
-    color: #ffffff;
+    color: #fff;
     text-transform: uppercase;
     transition: transform 0.2s, background 0.2s, color 0.2s;
   }
 
   .spin-btn:hover:not(:disabled) {
-    background: #ffffff;
-    color: #1a1a1a;
+    background: #fff;
+    color: #111;
     transform: scale(1.03);
   }
 
-  .spin-btn:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  .spin-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+  .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .footer {
     display: flex;
     align-items: center;
     gap: 1.2rem;
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     letter-spacing: 0.15em;
-    opacity: 0.4;
+    opacity: 0.35;
     text-transform: uppercase;
   }
 
-  .footer .dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #ffffff;
-  }
-
-  .confetti-piece {
-    position: fixed;
-    pointer-events: none;
-    z-index: 100;
-    animation: confettiFall linear forwards;
-  }
-
-  @keyframes confettiFall {
-    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
-    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
-  }
+  .footer .dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; }
 
   .celebration-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.88);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -234,10 +197,7 @@
     transition: opacity 0.6s;
   }
 
-  .celebration-overlay.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
+  .celebration-overlay.active { opacity: 1; pointer-events: auto; }
 
   .celebration-overlay .trophy {
     font-size: 4rem;
@@ -253,25 +213,21 @@
   .celebration-overlay .congrats-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 3rem;
-    letter-spacing: 0.06em;
     color: #ffd700;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
     opacity: 0;
     transform: scale(0.5);
-    animation: popIn 0.5s ease 0.3s forwards;
   }
 
-  .celebration-overlay .winner-name {
+  .celebration-overlay .winner-name-big {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 4rem;
-    letter-spacing: 0.04em;
+    font-size: 3.8rem;
     color: #ffffff;
     text-transform: uppercase;
     margin-bottom: 1.5rem;
     opacity: 0;
     transform: translateY(20px);
-    animation: slideUp 0.5s ease 0.6s forwards;
   }
 
   .celebration-overlay .prize-text {
@@ -283,13 +239,9 @@
     max-width: 500px;
     opacity: 0;
     transform: translateY(20px);
-    animation: slideUp 0.5s ease 0.9s forwards;
   }
 
-  .celebration-overlay .prize-highlight {
-    color: #ffd700;
-    font-weight: 800;
-  }
+  .celebration-overlay .prize-highlight { color: #ffd700; font-weight: 800; }
 
   .celebration-overlay .close-btn {
     font-family: 'Bebas Neue', sans-serif;
@@ -304,7 +256,6 @@
     text-transform: uppercase;
     margin-top: 2rem;
     opacity: 0;
-    animation: slideUp 0.5s ease 1.2s forwards;
     transition: background 0.2s, border-color 0.2s;
   }
 
@@ -322,58 +273,49 @@
     0% { opacity: 0; transform: translateY(20px); }
     100% { opacity: 1; transform: translateY(0); }
   }
+
+  .confetti-piece {
+    position: fixed;
+    pointer-events: none;
+    z-index: 300;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+  }
 </style>
 </head>
 <body>
 
 <div class="container">
   <div class="logo-area">
-    <svg class="soccer-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs><clipPath id="ballClip"><circle cx="50" cy="50" r="44"/></clipPath></defs>
-      <circle cx="50" cy="50" r="44" fill="#fff"/>
-      <g clip-path="url(#ballClip)">
-        <polygon points="50.0,38.0 61.4,46.3 57.1,59.7 42.9,59.7 38.6,46.3" fill="#1a1a1a"/>
-        <polygon points="50.0,30.5 42.9,25.3 45.6,16.9 54.4,16.9 57.1,25.3" fill="#1a1a1a"/>
-        <polygon points="68.5,44.0 71.3,35.6 80.1,35.6 82.8,44.0 75.7,49.2" fill="#1a1a1a"/>
-        <polygon points="61.5,65.8 70.3,65.8 73.0,74.2 65.9,79.3 58.7,74.2" fill="#1a1a1a"/>
-        <polygon points="38.5,65.8 41.3,74.2 34.1,79.3 27.0,74.2 29.7,65.8" fill="#1a1a1a"/>
-        <polygon points="31.5,44.0 24.3,49.2 17.2,44.0 19.9,35.6 28.7,35.6" fill="#1a1a1a"/>
-        <line x1="50.0" y1="38.0" x2="50.0" y2="30.5" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="61.4" y1="46.3" x2="68.5" y2="44.0" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="57.1" y1="59.7" x2="61.5" y2="65.8" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="42.9" y1="59.7" x2="38.5" y2="65.8" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="38.6" y1="46.3" x2="31.5" y2="44.0" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="57.1" y1="25.3" x2="71.3" y2="35.6" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="75.7" y1="49.2" x2="70.3" y2="65.8" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="58.7" y1="74.2" x2="41.3" y2="74.2" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="29.7" y1="65.8" x2="24.3" y2="49.2" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="28.7" y1="35.6" x2="42.9" y2="25.3" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="45.6" y1="16.9" x2="44.3" y2="7.4" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="54.4" y1="16.9" x2="55.7" y2="7.4" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="80.1" y1="35.6" x2="88.8" y2="31.4" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="82.8" y1="44.0" x2="92.3" y2="42.2" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="73.0" y1="74.2" x2="79.7" y2="81.1" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="65.9" y1="79.3" x2="70.5" y2="87.8" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="34.1" y1="79.3" x2="29.5" y2="87.8" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="27.0" y1="74.2" x2="20.3" y2="81.1" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="17.2" y1="44.0" x2="7.7" y2="42.2" stroke="#1a1a1a" stroke-width="1.3"/>
-        <line x1="19.9" y1="35.6" x2="11.2" y2="31.4" stroke="#1a1a1a" stroke-width="1.3"/>
-      </g>
-      <circle cx="50" cy="50" r="44" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
-    </svg>
     <div class="title">Baricup 26</div>
     <div class="divider"></div>
     <div class="subtitle">Sorteio oficial</div>
   </div>
 
-  <div class="wheel-wrapper" id="wheelWrapper">
-    <div class="pointer" id="pointer"></div>
-    <canvas id="wheel" width="340" height="340"></canvas>
+  <div class="wheel-area">
+    <canvas id="rouletteCanvas" width="380" height="380"></canvas>
+  </div>
+
+  <div class="players-area">
+    <div class="player-card white-card" id="card0">
+      <div class="color-dot"></div>
+      <div class="player-name">Regis Borges</div>
+      <div style="font-size:0.75rem; opacity:0.5; text-transform:uppercase; letter-spacing:0.1em;">Branco</div>
+    </div>
+    <div class="vs-text">VS</div>
+    <div class="player-card black-card" id="card1">
+      <div class="color-dot"></div>
+      <div class="player-name">Amon Maia</div>
+      <div style="font-size:0.75rem; opacity:0.5; text-transform:uppercase; letter-spacing:0.1em;">Preto</div>
+    </div>
   </div>
 
   <div class="result" id="result"></div>
-
-  <button class="spin-btn" id="spinBtn">Girar a roleta</button>
+  <button class="spin-btn" id="spinBtn">Lançar a bola</button>
 
   <div class="footer">
     <span>CWB</span>
@@ -384,9 +326,9 @@
 
 <div class="celebration-overlay" id="celebration">
   <div class="trophy">🏆</div>
-  <div class="congrats-title">Parabéns!</div>
-  <div class="winner-name" id="winnerName"></div>
-  <div class="prize-text">
+  <div class="congrats-title" id="congratsTitle">Parabéns!</div>
+  <div class="winner-name-big" id="winnerName"></div>
+  <div class="prize-text" id="prizeText">
     Você ganhou uma<br><span class="prize-highlight">camisa oficial da Seleção Brasileira!</span>
   </div>
   <button class="close-btn" id="closeBtn">Voltar</button>
@@ -394,148 +336,346 @@
 
 <script>
 (function () {
-  const names = ["Ingryd Nova", "Isabella Braga"];
+  const players = [
+    { name: "Regis Borges", color: "white" },
+    { name: "Amon Maia", color: "black" }
+  ];
 
-  const canvas = document.getElementById("wheel");
+  const canvas = document.getElementById("rouletteCanvas");
   const ctx = canvas.getContext("2d");
   const btn = document.getElementById("spinBtn");
   const resultEl = document.getElementById("result");
-  const wrapper = document.getElementById("wheelWrapper");
-  const pointer = document.getElementById("pointer");
 
-  const cx = 170, cy = 170, r = 160;
-  let angle = 0;
+  const W = 380;
+  const CX = W / 2, CY = W / 2;
+  const RIM_OUTER = 185;
+  const SLOT_OUTER = 168;
+  const SLOT_INNER = 120;
+  const SLOT_MID = (SLOT_OUTER + SLOT_INNER) / 2;
+  const HUB_R = SLOT_INNER - 5;
+  const NUM_SLOTS = 20;
+  const SLOT_ANGLE = (Math.PI * 2) / NUM_SLOTS;
+  const BALL_TRACK_R = 176;
+  const BALL_R = 7;
+
+  let wheelAngle = 0;
   let spinning = false;
+  let showBall = false;
+  let ballAngle = 0;
+  let ballRadius = BALL_TRACK_R;
 
-  function drawWheel(rot) {
-    ctx.clearRect(0, 0, 340, 340);
-    const sliceAngle = Math.PI;
+  function slotFill(i) { return i % 2 === 0 ? "#e0e0e0" : "#1a1a1a"; }
+  function slotText(i) { return i % 2 === 0 ? "#333" : "#bbb"; }
 
-    for (let i = 0; i < 2; i++) {
-      const start = rot + i * sliceAngle;
-      const end = start + sliceAngle;
+  function draw() {
+    ctx.clearRect(0, 0, W, W);
+
+    // === RIM ===
+    const rimG = ctx.createRadialGradient(CX, CY, SLOT_OUTER, CX, CY, RIM_OUTER);
+    rimG.addColorStop(0, "#333");
+    rimG.addColorStop(0.4, "#222");
+    rimG.addColorStop(1, "#111");
+    ctx.beginPath();
+    ctx.arc(CX, CY, RIM_OUTER, 0, Math.PI * 2);
+    ctx.fillStyle = rimG;
+    ctx.fill();
+
+    // Ball track groove
+    ctx.beginPath();
+    ctx.arc(CX, CY, BALL_TRACK_R, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.07)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Deflectors
+    for (let d = 0; d < 8; d++) {
+      const da = d * Math.PI / 4;
+      const dx = CX + (SLOT_OUTER + 10) * Math.cos(da);
+      const dy = CY + (SLOT_OUTER + 10) * Math.sin(da);
+      ctx.beginPath();
+      ctx.moveTo(
+        dx + 6 * Math.cos(da),
+        dy + 6 * Math.sin(da)
+      );
+      ctx.lineTo(
+        dx + 4 * Math.cos(da + 0.6),
+        dy + 4 * Math.sin(da + 0.6)
+      );
+      ctx.lineTo(
+        dx + 4 * Math.cos(da - 0.6),
+        dy + 4 * Math.sin(da - 0.6)
+      );
+      ctx.closePath();
+      ctx.fillStyle = "#777";
+      ctx.fill();
+    }
+
+    // === WHEEL (rotates) ===
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(wheelAngle);
+
+    // Slots
+    for (let i = 0; i < NUM_SLOTS; i++) {
+      const a0 = i * SLOT_ANGLE;
+      const a1 = a0 + SLOT_ANGLE;
 
       ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, r, start, end);
+      ctx.arc(0, 0, SLOT_OUTER, a0, a1);
+      ctx.arc(0, 0, SLOT_INNER, a1, a0, true);
       ctx.closePath();
-      ctx.fillStyle = i === 0 ? "#ffffff" : "#2a2a2a";
+      ctx.fillStyle = slotFill(i);
       ctx.fill();
 
+      // Fret
+      ctx.beginPath();
+      ctx.moveTo(SLOT_INNER * Math.cos(a0), SLOT_INNER * Math.sin(a0));
+      ctx.lineTo(SLOT_OUTER * Math.cos(a0), SLOT_OUTER * Math.sin(a0));
+      ctx.strokeStyle = "#888";
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      // Number
       ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(start + sliceAngle / 2);
-      ctx.fillStyle = i === 0 ? "#1a1a1a" : "#ffffff";
-      ctx.font = "600 18px 'Bebas Neue', sans-serif";
-      ctx.letterSpacing = "2px";
+      ctx.rotate(a0 + SLOT_ANGLE / 2);
+      ctx.fillStyle = slotText(i);
+      ctx.font = "600 12px 'Bebas Neue', sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(names[i].toUpperCase(), r * 0.5, 0);
+      ctx.fillText(i + 1, SLOT_MID, 0);
       ctx.restore();
     }
 
+    // Last fret
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.2)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, 20, 0, Math.PI * 2);
-    ctx.fillStyle = "#1a1a1a";
-    ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.arc(0, 0, SLOT_OUTER, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#ffffff";
+    ctx.arc(0, 0, SLOT_INNER, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.1)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Hub
+    const hubG = ctx.createRadialGradient(-6, -6, 4, 0, 0, HUB_R);
+    hubG.addColorStop(0, "#3a3a3a");
+    hubG.addColorStop(0.7, "#1e1e1e");
+    hubG.addColorStop(1, "#111");
+    ctx.beginPath();
+    ctx.arc(0, 0, HUB_R, 0, Math.PI * 2);
+    ctx.fillStyle = hubG;
     ctx.fill();
+    ctx.strokeStyle = "#444";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Center cone
+    const coneG = ctx.createRadialGradient(-2, -2, 1, 0, 0, 24);
+    coneG.addColorStop(0, "#ccc");
+    coneG.addColorStop(0.3, "#999");
+    coneG.addColorStop(1, "#333");
+    ctx.beginPath();
+    ctx.arc(0, 0, 24, 0, Math.PI * 2);
+    ctx.fillStyle = coneG;
+    ctx.fill();
+
+    // Cross
+    ctx.strokeStyle = "#777";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(20, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(0, 20); ctx.stroke();
+
+    // Spindle
+    ctx.beginPath();
+    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+    ctx.fillStyle = "#ddd";
+    ctx.fill();
+
+    ctx.restore(); // end wheel rotation
+
+    // === BALL (absolute position) ===
+    if (showBall) {
+      const bx = CX + ballRadius * Math.cos(ballAngle);
+      const by = CY + ballRadius * Math.sin(ballAngle);
+
+      ctx.beginPath();
+      ctx.arc(bx + 2, by + 2, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.5)";
+      ctx.fill();
+
+      const bG = ctx.createRadialGradient(bx - 2, by - 2, 1, bx, by, BALL_R);
+      bG.addColorStop(0, "#fff");
+      bG.addColorStop(0.5, "#ddd");
+      bG.addColorStop(1, "#888");
+      ctx.beginPath();
+      ctx.arc(bx, by, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = bG;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(bx - 2, by - 2, 2, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.fill();
+    }
+
+    // Outer shadow ring
+    ctx.beginPath();
+    ctx.arc(CX, CY, RIM_OUTER, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
   }
 
-  drawWheel(angle);
+  draw();
 
   function launchConfetti() {
     const colors = ["#009c3b", "#ffdf00", "#002776", "#ffffff", "#009c3b", "#ffdf00"];
-    for (let i = 0; i < 50; i++) {
-      const piece = document.createElement("div");
-      piece.className = "confetti-piece";
-      piece.style.left = Math.random() * 100 + "vw";
-      piece.style.top = -10 + "px";
-      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-      piece.style.width = (4 + Math.random() * 8) + "px";
-      piece.style.height = (4 + Math.random() * 8) + "px";
-      piece.style.borderRadius = Math.random() > 0.5 ? "50%" : "1px";
-      piece.style.animationDuration = (2 + Math.random() * 2.5) + "s";
-      piece.style.animationDelay = Math.random() * 0.6 + "s";
-      document.body.appendChild(piece);
-      setTimeout(() => piece.remove(), 5500);
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement("div");
+      p.className = "confetti-piece";
+      p.style.left = Math.random() * 100 + "vw";
+      p.style.top = -10 + "px";
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      p.style.width = (4 + Math.random() * 8) + "px";
+      p.style.height = (4 + Math.random() * 8) + "px";
+      p.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+      p.style.animationDuration = (2 + Math.random() * 2.5) + "s";
+      p.style.animationDelay = Math.random() * 0.6 + "s";
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 5500);
     }
+  }
+
+  function showCelebration(name) {
+    document.getElementById("winnerName").textContent = name.toUpperCase();
+    const overlay = document.getElementById("celebration");
+    const ct = document.getElementById("congratsTitle");
+    const wn = document.getElementById("winnerName");
+    const pt = document.getElementById("prizeText");
+    const cb = document.getElementById("closeBtn");
+
+    ct.style.animation = "none"; wn.style.animation = "none";
+    pt.style.animation = "none"; cb.style.animation = "none";
+    void ct.offsetWidth;
+    ct.style.animation = "popIn 0.5s ease 0.3s forwards";
+    wn.style.animation = "slideUp 0.5s ease 0.6s forwards";
+    pt.style.animation = "slideUp 0.5s ease 0.9s forwards";
+    cb.style.animation = "slideUp 0.5s ease 1.2s forwards";
+
+    overlay.classList.add("active");
+    launchConfetti();
+    setTimeout(launchConfetti, 800);
+    setTimeout(launchConfetti, 1600);
   }
 
   btn.addEventListener("click", function () {
     if (spinning) return;
     spinning = true;
+    showBall = true;
+    btn.disabled = true;
     resultEl.classList.remove("show");
     resultEl.textContent = "";
-    btn.disabled = true;
-    wrapper.classList.add("spinning");
+    document.getElementById("card0").classList.remove("winner");
+    document.getElementById("card1").classList.remove("winner");
 
-    const totalRotation = Math.PI * 2 * (8 + Math.random() * 6) + Math.random() * Math.PI * 2;
-    const duration = 5000;
-    const startTime = performance.now();
-    const startAngle = angle;
+    // Physics
+    let wVel = 0.04 + Math.random() * 0.02;   // wheel clockwise
+    let bVel = -(0.10 + Math.random() * 0.05); // ball counter-clockwise (faster)
+    ballAngle = Math.random() * Math.PI * 2;
+    ballRadius = BALL_TRACK_R;
+    let dropped = false;
+    let settleCount = 0;
 
-    function easeOut(t) {
-      return 1 - Math.pow(1 - t, 4);
-    }
+    const dropDelay = 2200 + Math.random() * 1200;
+    const t0 = performance.now();
 
-    let lastSlice = -1;
+    function tick(now) {
+      const elapsed = now - t0;
 
-    function animate(now) {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOut(progress);
-      angle = startAngle + totalRotation * eased;
-      drawWheel(angle);
+      // Wheel always decelerates
+      wheelAngle += wVel;
+      wVel *= 0.9985;
 
-      const normalizedAngle = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-      const currentSlice = normalizedAngle < Math.PI ? 0 : 1;
-      if (lastSlice !== -1 && currentSlice !== lastSlice && progress < 0.85) {
-        pointer.classList.remove("bounce");
-        void pointer.offsetWidth;
-        pointer.classList.add("bounce");
-      }
-      lastSlice = currentSlice;
+      if (!dropped) {
+        // Ball on outer track
+        ballAngle += bVel;
+        bVel *= (elapsed < dropDelay) ? 0.997 : 0.98;
 
-      if (progress < 1) {
-        requestAnimationFrame(animate);
+        // Start dropping when ball is slow enough or time elapsed
+        if (elapsed > dropDelay && Math.abs(bVel) < 0.04) {
+          dropped = true;
+        }
       } else {
-        spinning = false;
-        btn.disabled = false;
-        wrapper.classList.remove("spinning");
+        // Ball spiraling inward
+        ballAngle += bVel;
+        bVel *= 0.98;
 
-        const pointerAngle = (3 * Math.PI / 2 - normalizedAngle + Math.PI * 2) % (Math.PI * 2);
-        const winnerIndex = pointerAngle < Math.PI ? 0 : 1;
-        const winnerName = names[winnerIndex];
-        resultEl.textContent = winnerName.toUpperCase();
-        resultEl.classList.add("show");
-        launchConfetti();
+        const target = SLOT_MID;
+        ballRadius += (target - ballRadius) * 0.03;
 
-        setTimeout(function() {
-          document.getElementById("winnerName").textContent = winnerName.toUpperCase();
-          document.getElementById("celebration").classList.add("active");
-          launchConfetti();
-          setTimeout(function() { launchConfetti(); }, 800);
-          setTimeout(function() { launchConfetti(); }, 1600);
-        }, 1500);
+        // Bounce effect near slots
+        if (ballRadius < SLOT_OUTER && ballRadius > target - 5) {
+          ballRadius += Math.sin(elapsed * 0.025) * 3 * Math.max(0, Math.abs(bVel) / 0.01);
+        }
+
+        // Settled?
+        if (Math.abs(bVel) < 0.002 && Math.abs(ballRadius - target) < 4) {
+          settleCount++;
+        } else {
+          settleCount = 0;
+        }
+
+        if (settleCount > 20) {
+          ballRadius = target;
+          bVel = 0;
+
+          // Which slot?
+          const rel = ((ballAngle - wheelAngle) % (Math.PI * 2) + Math.PI * 4) % (Math.PI * 2);
+          const slotIdx = Math.floor(rel / SLOT_ANGLE) % NUM_SLOTS;
+          const isWhite = slotIdx % 2 === 0;
+          const winner = isWhite ? players[0] : players[1];
+          const cardId = isWhite ? "card0" : "card1";
+
+          // Lock ball to slot
+          ballAngle = wheelAngle + slotIdx * SLOT_ANGLE + SLOT_ANGLE / 2;
+
+          // Coast wheel to stop
+          function coast() {
+            if (wVel > 0.0003) {
+              wheelAngle += wVel;
+              wVel *= 0.992;
+              ballAngle = wheelAngle + slotIdx * SLOT_ANGLE + SLOT_ANGLE / 2;
+              draw();
+              requestAnimationFrame(coast);
+            } else {
+              wVel = 0;
+              draw();
+              spinning = false;
+              btn.disabled = false;
+
+              document.getElementById(cardId).classList.add("winner");
+              resultEl.textContent = winner.name.toUpperCase() + " venceu!";
+              resultEl.classList.add("show");
+              launchConfetti();
+              setTimeout(() => showCelebration(winner.name), 1800);
+            }
+          }
+          coast();
+          return;
+        }
       }
+
+      draw();
+      requestAnimationFrame(tick);
     }
-    requestAnimationFrame(animate);
+
+    requestAnimationFrame(tick);
   });
 
-  document.getElementById("closeBtn").addEventListener("click", function() {
+  document.getElementById("closeBtn").addEventListener("click", function () {
     document.getElementById("celebration").classList.remove("active");
   });
 })();
