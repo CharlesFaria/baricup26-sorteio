@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roleta Cassino - Baricup 26</title>
+<title>Corrida - Baricup 26</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,19 +15,10 @@
     align-items: center;
     justify-content: center;
     font-family: 'Outfit', sans-serif;
-    background: #111;
+    background: #0b0d10;
     color: #fff;
-    overflow: hidden;
+    overflow-x: hidden;
     position: relative;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle 2px at center, rgba(255,255,255,0.06) 1px, transparent 1px);
-    background-size: 18px 18px;
-    pointer-events: none;
   }
 
   .container {
@@ -35,17 +26,13 @@
     flex-direction: column;
     align-items: center;
     gap: 1.2rem;
-    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    padding: 1.5rem;
     z-index: 1;
   }
 
-  .logo-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.2rem;
-    margin-bottom: 0.3rem;
-  }
+  .logo-area { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
 
   .title {
     font-family: 'Bebas Neue', sans-serif;
@@ -64,87 +51,205 @@
   }
 
   .divider {
-    width: 200px;
-    height: 2px;
+    width: 200px; height: 2px;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
     margin: 0.1rem 0;
   }
 
-  .wheel-area {
+  /* ===== CENÁRIO ===== */
+  .scene {
     position: relative;
-    width: 380px;
-    height: 380px;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(0,0,0,0.5);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   }
 
-  canvas#rouletteCanvas {
+  .sky {
+    position: relative;
+    height: 110px;
+    background: linear-gradient(#7ec8f0 0%, #aee0f5 55%, #d8f0e0 100%);
+    overflow: hidden;
+  }
+
+  .sun {
+    position: absolute;
+    top: 18px; right: 80px;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #fff7d6, #ffe16b);
+    box-shadow: 0 0 30px rgba(255,225,107,0.8);
+  }
+
+  .mountains {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background:
+      radial-gradient(60px 50px at 15% 100%, #6fae7a 60%, transparent 61%),
+      radial-gradient(80px 60px at 38% 100%, #5fa06c 60%, transparent 61%),
+      radial-gradient(70px 55px at 62% 100%, #6fae7a 60%, transparent 61%),
+      radial-gradient(90px 65px at 85% 100%, #5fa06c 60%, transparent 61%);
+  }
+
+  /* arquibancada simplificada */
+  .stand {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 26px;
+    background: repeating-linear-gradient(90deg,
+      #c94f4f 0 14px, #e0e0e0 14px 28px);
+    opacity: 0.7;
+    border-top: 3px solid #fff;
+  }
+
+  .rail {
+    height: 14px;
+    background: #f4f4f4;
+    border-top: 2px solid #cfcfcf;
+    border-bottom: 4px solid #2f6b3a;
+    position: relative;
+  }
+  .rail::after {
+    content: '';
     position: absolute;
     inset: 0;
-    z-index: 2;
+    background: repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.12) 0 2px, transparent 2px 48px);
   }
 
-  .players-area {
-    display: flex;
-    gap: 2rem;
-    align-items: center;
+  /* gramado / pista */
+  .turf {
+    position: relative;
+    background: repeating-linear-gradient(90deg,
+      #2f8a45 0 40px, #2b8040 40px 80px);
+    padding: 10px 0;
   }
 
-  .player-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 1rem 1.8rem;
-    border-radius: 6px;
-    border: 2px solid rgba(255,255,255,0.1);
-    transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
-    min-width: 140px;
+  /* linha de chegada */
+  .finish-flag {
+    position: absolute;
+    top: 0; bottom: 0;
+    right: 64px;
+    width: 10px;
+    background:
+      repeating-linear-gradient(45deg, #fff 0 5px, #111 5px 10px);
+    z-index: 4;
+    box-shadow: 0 0 8px rgba(0,0,0,0.4);
   }
-
-  .player-card.white-card { background: rgba(255,255,255,0.05); }
-  .player-card.black-card { background: rgba(0,0,0,0.3); }
-
-  .player-card .color-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.3);
-  }
-
-  .player-card.white-card .color-dot { background: #ffffff; }
-  .player-card.black-card .color-dot { background: #1a1a1a; }
-
-  .player-card .player-name {
+  .finish-flag::before {
+    content: 'CHEGADA';
+    position: absolute;
+    top: -2px; left: 14px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .player-card.winner {
-    border-color: #ffd700;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-    transform: scale(1.05);
-  }
-
-  .vs-text {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
-    opacity: 0.3;
+    font-size: 0.7rem;
     letter-spacing: 0.1em;
+    color: #fff;
+    text-shadow: 0 1px 2px #000;
+    writing-mode: vertical-rl;
   }
+
+  .lane {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 2px 0;
+  }
+
+  .lane-label {
+    width: 160px;
+    flex-shrink: 0;
+    padding-left: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .lane-label .silk {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.6);
+    flex-shrink: 0;
+  }
+
+  .lane-track {
+    position: relative;
+    flex: 1;
+    height: 100%;
+  }
+
+  /* cada raia: profundidade fake (de cima=longe/menor pra baixo=perto/maior) */
+  .lane[data-depth="0"] { height: 56px; }
+  .lane[data-depth="1"] { height: 62px; }
+  .lane[data-depth="2"] { height: 70px; }
+  .lane[data-depth="0"] .lane-label { font-size: 1.0rem;  opacity: 0.9; }
+  .lane[data-depth="1"] .lane-label { font-size: 1.12rem; }
+  .lane[data-depth="2"] .lane-label { font-size: 1.24rem; }
+
+  .runner {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    will-change: left;
+  }
+  .lane[data-depth="0"] .runner svg { width: 64px;  height: 46px; }
+  .lane[data-depth="1"] .runner svg { width: 74px;  height: 52px; }
+  .lane[data-depth="2"] .runner svg { width: 86px;  height: 60px; }
+
+  .runner svg { display: block; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.4)); }
+
+  /* galope: corpo balança, pernas alternam */
+  .runner.run .body  { animation: gallopBody 0.28s ease-in-out infinite alternate; transform-origin: 50% 80%; }
+  .runner.run .legA  { animation: legSwingA 0.28s linear infinite; transform-origin: top center; }
+  .runner.run .legB  { animation: legSwingB 0.28s linear infinite; transform-origin: top center; }
+
+  @keyframes gallopBody {
+    0%   { transform: translateY(0)    rotate(-2deg); }
+    100% { transform: translateY(-3px) rotate(2deg); }
+  }
+  @keyframes legSwingA {
+    0%,100% { transform: rotate(28deg); }
+    50%     { transform: rotate(-28deg); }
+  }
+  @keyframes legSwingB {
+    0%,100% { transform: rotate(-28deg); }
+    50%     { transform: rotate(28deg); }
+  }
+
+  /* badge de posição ao vivo */
+  .pos-badge {
+    position: absolute;
+    top: -8px; right: -4px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.78rem;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 10px;
+    padding: 0 6px;
+    line-height: 16px;
+    color: #ffd700;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .runner.show-pos .pos-badge { opacity: 1; }
 
   .result {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.8rem;
     letter-spacing: 0.06em;
-    min-height: 2.4rem;
+    min-height: 2.2rem;
     text-align: center;
     color: #ffd700;
     opacity: 0;
     transform: translateY(8px);
     transition: opacity 0.5s, transform 0.5s;
   }
-
   .result.show { opacity: 1; transform: translateY(0); }
 
   .spin-btn {
@@ -160,129 +265,116 @@
     text-transform: uppercase;
     transition: transform 0.2s, background 0.2s, color 0.2s;
   }
-
-  .spin-btn:hover:not(:disabled) {
-    background: #fff;
-    color: #111;
-    transform: scale(1.03);
-  }
-
+  .spin-btn:hover:not(:disabled) { background: #fff; color: #111; transform: scale(1.03); }
   .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .footer {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    margin-top: 0.3rem;
+    display: flex; align-items: center; gap: 1.2rem;
+    margin-top: 0.2rem;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.9rem;
-    letter-spacing: 0.15em;
-    opacity: 0.35;
+    font-size: 0.9rem; letter-spacing: 0.15em; opacity: 0.35;
     text-transform: uppercase;
   }
-
   .footer .dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; }
 
-  .celebration-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.88);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  /* ===== PLACAR ESTILO HIPÓDROMO (inspirado na foto) ===== */
+  .scoreboard-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
     z-index: 200;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s;
   }
+  .scoreboard-overlay.active { opacity: 1; pointer-events: auto; }
 
-  .celebration-overlay.active { opacity: 1; pointer-events: auto; }
-
-  .celebration-overlay .trophy {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-    animation: trophyBounce 0.8s ease infinite alternate;
-  }
-
-  @keyframes trophyBounce {
-    0% { transform: scale(1) rotate(-5deg); }
-    100% { transform: scale(1.1) rotate(5deg); }
-  }
-
-  .celebration-overlay .congrats-title {
+  .scoreboard {
+    width: 460px;
+    max-width: 90vw;
+    background: #050a06;
+    border: 3px solid #1d3a24;
+    border-radius: 10px;
+    padding: 22px 26px 26px;
+    box-shadow: 0 0 50px rgba(0, 255, 100, 0.15);
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 3rem;
-    color: #ffd700;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-    opacity: 0;
-    transform: scale(0.5);
   }
 
-  .celebration-overlay .winner-name-big {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3.8rem;
-    color: #ffffff;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  .celebration-overlay .prize-text {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.3rem;
-    color: #ffffff;
+  .sb-header {
     text-align: center;
-    line-height: 1.6;
-    max-width: 500px;
-    opacity: 0;
-    transform: translateY(20px);
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+  .sb-header span { color: #38e06a; }
+
+  .sb-sub {
+    text-align: center;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    color: #5f8f6c;
+    margin-bottom: 1rem;
   }
 
-  .celebration-overlay .prize-highlight { color: #ffd700; font-weight: 800; }
+  .sb-row {
+    display: flex; align-items: center;
+    padding: 9px 4px;
+    border-bottom: 1px solid rgba(56,224,106,0.12);
+    font-size: 1.25rem;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  .sb-row.in { animation: rowIn 0.4s ease forwards; }
 
-  .celebration-overlay .close-btn {
+  @keyframes rowIn { to { opacity: 1; transform: translateX(0); } }
+
+  .sb-row .silk {
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    margin-right: 12px;
+    border: 1px solid rgba(255,255,255,0.5);
+    flex-shrink: 0;
+  }
+  .sb-row .name { flex: 1; color: #d8ffe2; }
+  .sb-row .place { color: #38e06a; font-size: 1.1rem; }
+  .sb-row.first .name { color: #ffd700; }
+  .sb-row.first .place { color: #ffd700; }
+
+  .sb-prize {
+    text-align: center;
+    margin-top: 1.2rem;
+    font-size: 1.5rem;
+    letter-spacing: 0.06em;
+    color: #fff;
+    opacity: 0;
+  }
+  .sb-prize.in { animation: rowIn 0.5s ease forwards; }
+  .sb-prize .hl { color: #ffd700; display: block; font-size: 1.7rem; margin-top: 2px; }
+
+  .sb-close {
+    display: block;
+    margin: 1.4rem auto 0;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.12em;
-    padding: 12px 40px;
-    border: 2px solid rgba(255,255,255,0.3);
+    font-size: 1rem; letter-spacing: 0.12em;
+    padding: 10px 36px;
+    border: 2px solid rgba(56,224,106,0.4);
     border-radius: 4px;
-    cursor: pointer;
     background: transparent;
-    color: #ffffff;
+    color: #d8ffe2;
     text-transform: uppercase;
-    margin-top: 2rem;
+    cursor: pointer;
     opacity: 0;
-    transition: background 0.2s, border-color 0.2s;
   }
-
-  .celebration-overlay .close-btn:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.6);
-  }
-
-  @keyframes popIn {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-
-  @keyframes slideUp {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
+  .sb-close.in { animation: rowIn 0.4s ease forwards; }
+  .sb-close:hover { background: rgba(56,224,106,0.1); }
 
   .confetti-piece {
-    position: fixed;
-    pointer-events: none;
-    z-index: 300;
+    position: fixed; pointer-events: none; z-index: 300;
     animation: confettiFall linear forwards;
   }
-
   @keyframes confettiFall {
-    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
     100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
   }
 </style>
@@ -293,251 +385,133 @@
   <div class="logo-area">
     <div class="title">Baricup 26</div>
     <div class="divider"></div>
-    <div class="subtitle">Sorteio oficial</div>
+    <div class="subtitle">Corrida oficial</div>
   </div>
 
-  <div class="wheel-area">
-    <canvas id="rouletteCanvas" width="380" height="380"></canvas>
-  </div>
-
-  <div class="players-area">
-    <div class="player-card white-card" id="card0">
-      <div class="color-dot"></div>
-      <div class="player-name">Regis Borges</div>
-      <div style="font-size:0.75rem; opacity:0.5; text-transform:uppercase; letter-spacing:0.1em;">Branco</div>
+  <div class="scene" id="scene">
+    <div class="sky">
+      <div class="sun"></div>
+      <div class="mountains"></div>
+      <div class="stand"></div>
     </div>
-    <div class="vs-text">VS</div>
-    <div class="player-card black-card" id="card1">
-      <div class="color-dot"></div>
-      <div class="player-name">Amon Maia</div>
-      <div style="font-size:0.75rem; opacity:0.5; text-transform:uppercase; letter-spacing:0.1em;">Preto</div>
+    <div class="rail"></div>
+
+    <div class="turf" id="turf">
+      <div class="finish-flag"></div>
+
+      <div class="lane" data-depth="0">
+        <div class="lane-label"><span class="silk" style="background:#3aa0ff"></span>Rafael Augusto</div>
+        <div class="lane-track"><div class="runner" data-idx="0"></div></div>
+      </div>
+      <div class="lane" data-depth="1">
+        <div class="lane-label"><span class="silk" style="background:#ff5b8a"></span>Kelly Nascimento</div>
+        <div class="lane-track"><div class="runner" data-idx="1"></div></div>
+      </div>
+      <div class="lane" data-depth="2">
+        <div class="lane-label"><span class="silk" style="background:#ffd54a"></span>Gabriel Sostak</div>
+        <div class="lane-track"><div class="runner" data-idx="2"></div></div>
+      </div>
     </div>
   </div>
 
   <div class="result" id="result"></div>
-  <button class="spin-btn" id="spinBtn">Lançar a bola</button>
+  <button class="spin-btn" id="startBtn">Largada!</button>
 
   <div class="footer">
-    <span>CWB</span>
-    <div class="dot"></div>
-    <span>IMOB</span>
+    <span>CWB</span><div class="dot"></div><span>IMOB</span>
   </div>
 </div>
 
-<div class="celebration-overlay" id="celebration">
-  <div class="trophy">🏆</div>
-  <div class="congrats-title" id="congratsTitle">Parabéns!</div>
-  <div class="winner-name-big" id="winnerName"></div>
-  <div class="prize-text" id="prizeText">
-    Você ganhou uma<br><span class="prize-highlight">camisa oficial da Seleção Brasileira!</span>
+<div class="scoreboard-overlay" id="scoreboard">
+  <div class="scoreboard">
+    <div class="sb-header">PRÊMIO: <span>CAMISA OFICIAL</span></div>
+    <div class="sb-sub">RESULTADO DA CORRIDA</div>
+    <div id="sbRows"></div>
+    <div class="sb-prize" id="sbPrize">
+      O vencedor leva a
+      <span class="hl">Camisa Oficial da Seleção Brasileira</span>
+    </div>
+    <button class="sb-close" id="sbClose">Voltar</button>
   </div>
-  <button class="close-btn" id="closeBtn">Voltar</button>
 </div>
 
 <script>
 (function () {
+  // nome + cor da "silk" (capa do jóquei), usada na raia e no placar
   const players = [
-    { name: "Regis Borges", color: "white" },
-    { name: "Amon Maia", color: "black" }
+    { name: "Rafael Augusto",   color: "#3aa0ff" },
+    { name: "Kelly Nascimento", color: "#ff5b8a" },
+    { name: "Gabriel Sostak",   color: "#ffd54a" }
   ];
 
-  const canvas = document.getElementById("rouletteCanvas");
-  const ctx = canvas.getContext("2d");
-  const btn = document.getElementById("spinBtn");
-  const resultEl = document.getElementById("result");
-
-  const W = 380;
-  const CX = W / 2, CY = W / 2;
-  const RIM_OUTER = 185;
-  const SLOT_OUTER = 168;
-  const SLOT_INNER = 120;
-  const SLOT_MID = (SLOT_OUTER + SLOT_INNER) / 2;
-  const HUB_R = SLOT_INNER - 5;
-  const NUM_SLOTS = 20;
-  const SLOT_ANGLE = (Math.PI * 2) / NUM_SLOTS;
-  const BALL_TRACK_R = 176;
-  const BALL_R = 7;
-
-  let wheelAngle = 0;
-  let spinning = false;
-  let showBall = false;
-  let ballAngle = 0;
-  let ballRadius = BALL_TRACK_R;
-
-  function slotFill(i) { return i % 2 === 0 ? "#e0e0e0" : "#1a1a1a"; }
-  function slotText(i) { return i % 2 === 0 ? "#333" : "#bbb"; }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, W);
-
-    // === RIM ===
-    const rimG = ctx.createRadialGradient(CX, CY, SLOT_OUTER, CX, CY, RIM_OUTER);
-    rimG.addColorStop(0, "#333");
-    rimG.addColorStop(0.4, "#222");
-    rimG.addColorStop(1, "#111");
-    ctx.beginPath();
-    ctx.arc(CX, CY, RIM_OUTER, 0, Math.PI * 2);
-    ctx.fillStyle = rimG;
-    ctx.fill();
-
-    // Ball track groove
-    ctx.beginPath();
-    ctx.arc(CX, CY, BALL_TRACK_R, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.07)";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Deflectors
-    for (let d = 0; d < 8; d++) {
-      const da = d * Math.PI / 4;
-      const dx = CX + (SLOT_OUTER + 10) * Math.cos(da);
-      const dy = CY + (SLOT_OUTER + 10) * Math.sin(da);
-      ctx.beginPath();
-      ctx.moveTo(
-        dx + 6 * Math.cos(da),
-        dy + 6 * Math.sin(da)
-      );
-      ctx.lineTo(
-        dx + 4 * Math.cos(da + 0.6),
-        dy + 4 * Math.sin(da + 0.6)
-      );
-      ctx.lineTo(
-        dx + 4 * Math.cos(da - 0.6),
-        dy + 4 * Math.sin(da - 0.6)
-      );
-      ctx.closePath();
-      ctx.fillStyle = "#777";
-      ctx.fill();
-    }
-
-    // === WHEEL (rotates) ===
-    ctx.save();
-    ctx.translate(CX, CY);
-    ctx.rotate(wheelAngle);
-
-    // Slots
-    for (let i = 0; i < NUM_SLOTS; i++) {
-      const a0 = i * SLOT_ANGLE;
-      const a1 = a0 + SLOT_ANGLE;
-
-      ctx.beginPath();
-      ctx.arc(0, 0, SLOT_OUTER, a0, a1);
-      ctx.arc(0, 0, SLOT_INNER, a1, a0, true);
-      ctx.closePath();
-      ctx.fillStyle = slotFill(i);
-      ctx.fill();
-
-      // Fret
-      ctx.beginPath();
-      ctx.moveTo(SLOT_INNER * Math.cos(a0), SLOT_INNER * Math.sin(a0));
-      ctx.lineTo(SLOT_OUTER * Math.cos(a0), SLOT_OUTER * Math.sin(a0));
-      ctx.strokeStyle = "#888";
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
-
-      // Number
-      ctx.save();
-      ctx.rotate(a0 + SLOT_ANGLE / 2);
-      ctx.fillStyle = slotText(i);
-      ctx.font = "600 12px 'Bebas Neue', sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(i + 1, SLOT_MID, 0);
-      ctx.restore();
-    }
-
-    // Last fret
-    ctx.beginPath();
-    ctx.arc(0, 0, SLOT_OUTER, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(0, 0, SLOT_INNER, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255,0.1)";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Hub
-    const hubG = ctx.createRadialGradient(-6, -6, 4, 0, 0, HUB_R);
-    hubG.addColorStop(0, "#3a3a3a");
-    hubG.addColorStop(0.7, "#1e1e1e");
-    hubG.addColorStop(1, "#111");
-    ctx.beginPath();
-    ctx.arc(0, 0, HUB_R, 0, Math.PI * 2);
-    ctx.fillStyle = hubG;
-    ctx.fill();
-    ctx.strokeStyle = "#444";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Center cone
-    const coneG = ctx.createRadialGradient(-2, -2, 1, 0, 0, 24);
-    coneG.addColorStop(0, "#ccc");
-    coneG.addColorStop(0.3, "#999");
-    coneG.addColorStop(1, "#333");
-    ctx.beginPath();
-    ctx.arc(0, 0, 24, 0, Math.PI * 2);
-    ctx.fillStyle = coneG;
-    ctx.fill();
-
-    // Cross
-    ctx.strokeStyle = "#777";
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(20, 0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(0, 20); ctx.stroke();
-
-    // Spindle
-    ctx.beginPath();
-    ctx.arc(0, 0, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#ddd";
-    ctx.fill();
-
-    ctx.restore(); // end wheel rotation
-
-    // === BALL (absolute position) ===
-    if (showBall) {
-      const bx = CX + ballRadius * Math.cos(ballAngle);
-      const by = CY + ballRadius * Math.sin(ballAngle);
-
-      ctx.beginPath();
-      ctx.arc(bx + 2, by + 2, BALL_R, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fill();
-
-      const bG = ctx.createRadialGradient(bx - 2, by - 2, 1, bx, by, BALL_R);
-      bG.addColorStop(0, "#fff");
-      bG.addColorStop(0.5, "#ddd");
-      bG.addColorStop(1, "#888");
-      ctx.beginPath();
-      ctx.arc(bx, by, BALL_R, 0, Math.PI * 2);
-      ctx.fillStyle = bG;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(bx - 2, by - 2, 2, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.8)";
-      ctx.fill();
-    }
-
-    // Outer shadow ring
-    ctx.beginPath();
-    ctx.arc(CX, CY, RIM_OUTER, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(0,0,0,0.4)";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+  // SVG de cavalo desenhado inline (galope via CSS nos grupos .body/.legA/.legB)
+  function horseSVG(color) {
+    return `
+      <svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg">
+        <g class="body">
+          <!-- pernas (animam) -->
+          <rect class="legA" x="34" y="44" width="7" height="26" rx="3" fill="#5a3a22"/>
+          <rect class="legB" x="74" y="44" width="7" height="26" rx="3" fill="#4a2f1b"/>
+          <rect class="legB" x="44" y="44" width="7" height="26" rx="3" fill="#4a2f1b"/>
+          <rect class="legA" x="64" y="44" width="7" height="26" rx="3" fill="#5a3a22"/>
+          <!-- corpo -->
+          <ellipse cx="58" cy="40" rx="34" ry="17" fill="#6b4226"/>
+          <!-- garupa/cauda -->
+          <path d="M24 36 q-14 0 -18 16 q10 -6 18 -2 z" fill="#3a2616"/>
+          <!-- pescoço + cabeça -->
+          <path d="M82 38 q14 -4 20 -22 l8 4 q-2 16 -16 26 z" fill="#6b4226"/>
+          <path d="M104 18 l12 2 l-4 12 l-10 -4 z" fill="#5a3a22"/>
+          <!-- crina -->
+          <path d="M82 22 q10 -2 18 -10 q-2 8 -8 14 z" fill="#3a2616"/>
+          <!-- silk do jóquei (cor do competidor) -->
+          <ellipse cx="60" cy="30" rx="12" ry="9" fill="${color}"/>
+          <circle cx="66" cy="22" r="6" fill="#f1c9a5"/>
+          <!-- olho -->
+          <circle cx="110" cy="24" r="1.6" fill="#111"/>
+        </g>
+      </svg>`;
   }
 
-  draw();
+  const runners = Array.from(document.querySelectorAll(".runner"));
+  runners.forEach((r, i) => {
+    r.innerHTML = horseSVG(players[i].color) + '<span class="pos-badge"></span>';
+  });
+
+  const btn = document.getElementById("startBtn");
+  const resultEl = document.getElementById("result");
+
+  let running = false;
+  let positions = [0, 0, 0];
+  let finishLine = 0;
+  let stepBase = 0;            // passo médio por frame, calculado p/ durar ~RACE_SECONDS
+
+  const RACE_SECONDS = 10;     // duração-alvo da corrida
+  const FPS = 60;              // requestAnimationFrame ~ 60 fps
+
+  const ordinal = ["1º", "2º", "3º"];
+
+  function computeFinish() {
+    const lt = document.querySelector('.lane[data-depth="2"] .lane-track');
+    return lt.clientWidth - 70; // desconta a largura do cavalo
+  }
+
+  function reset() {
+    positions = [0, 0, 0];
+    runners.forEach(r => {
+      r.style.left = "0px";
+      r.classList.remove("run", "show-pos");
+    });
+    resultEl.classList.remove("show");
+    resultEl.textContent = "";
+  }
 
   function launchConfetti() {
     const colors = ["#009c3b", "#ffdf00", "#002776", "#ffffff", "#009c3b", "#ffdf00"];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 70; i++) {
       const p = document.createElement("div");
       p.className = "confetti-piece";
       p.style.left = Math.random() * 100 + "vw";
-      p.style.top = -10 + "px";
+      p.style.top = "-10px";
       p.style.background = colors[Math.floor(Math.random() * colors.length)];
       p.style.width = (4 + Math.random() * 8) + "px";
       p.style.height = (4 + Math.random() * 8) + "px";
@@ -549,134 +523,98 @@
     }
   }
 
-  function showCelebration(name) {
-    document.getElementById("winnerName").textContent = name.toUpperCase();
-    const overlay = document.getElementById("celebration");
-    const ct = document.getElementById("congratsTitle");
-    const wn = document.getElementById("winnerName");
-    const pt = document.getElementById("prizeText");
-    const cb = document.getElementById("closeBtn");
+  // monta o placar final ordenando pela distância percorrida
+  function showScoreboard() {
+    const ranking = positions
+      .map((p, i) => ({ i, p }))
+      .sort((a, b) => b.p - a.p);
 
-    ct.style.animation = "none"; wn.style.animation = "none";
-    pt.style.animation = "none"; cb.style.animation = "none";
-    void ct.offsetWidth;
-    ct.style.animation = "popIn 0.5s ease 0.3s forwards";
-    wn.style.animation = "slideUp 0.5s ease 0.6s forwards";
-    pt.style.animation = "slideUp 0.5s ease 0.9s forwards";
-    cb.style.animation = "slideUp 0.5s ease 1.2s forwards";
+    const rowsEl = document.getElementById("sbRows");
+    rowsEl.innerHTML = "";
+    ranking.forEach((r, place) => {
+      const pl = players[r.i];
+      const div = document.createElement("div");
+      div.className = "sb-row" + (place === 0 ? " first" : "");
+      div.innerHTML =
+        `<span class="silk" style="background:${pl.color}"></span>` +
+        `<span class="name">${pl.name}</span>` +
+        `<span class="place">${ordinal[place]}</span>`;
+      rowsEl.appendChild(div);
+      setTimeout(() => div.classList.add("in"), 200 + place * 220);
+    });
 
-    overlay.classList.add("active");
+    const prize = document.getElementById("sbPrize");
+    const close = document.getElementById("sbClose");
+    prize.classList.remove("in"); close.classList.remove("in");
+    void prize.offsetWidth;
+    setTimeout(() => prize.classList.add("in"), 200 + ranking.length * 220 + 150);
+    setTimeout(() => close.classList.add("in"), 200 + ranking.length * 220 + 400);
+
+    document.getElementById("scoreboard").classList.add("active");
     launchConfetti();
-    setTimeout(launchConfetti, 800);
-    setTimeout(launchConfetti, 1600);
+    setTimeout(launchConfetti, 900);
+    setTimeout(launchConfetti, 1800);
   }
 
-  btn.addEventListener("click", function () {
-    if (spinning) return;
-    spinning = true;
-    showBall = true;
+  function startRace() {
+    if (running) return;
+    running = true;
     btn.disabled = true;
-    resultEl.classList.remove("show");
-    resultEl.textContent = "";
-    document.getElementById("card0").classList.remove("winner");
-    document.getElementById("card1").classList.remove("winner");
+    reset();
+    finishLine = computeFinish();
+    // passo médio p/ o líder cruzar em ~RACE_SECONDS, independente do tamanho da tela.
+    // o líder anda um pouco acima da média, então dividimos por ~0.85 dos frames totais.
+    stepBase = finishLine / (RACE_SECONDS * FPS * 0.85);
+    runners.forEach(r => r.classList.add("run", "show-pos"));
 
-    // Physics
-    let wVel = 0.04 + Math.random() * 0.02;   // wheel clockwise
-    let bVel = -(0.10 + Math.random() * 0.05); // ball counter-clockwise (faster)
-    ballAngle = Math.random() * Math.PI * 2;
-    ballRadius = BALL_TRACK_R;
-    let dropped = false;
-    let settleCount = 0;
+    function tick() {
+      let order = positions
+        .map((p, i) => ({ i, p }))
+        .sort((a, b) => b.p - a.p);
 
-    const dropDelay = 2200 + Math.random() * 1200;
-    const t0 = performance.now();
-
-    function tick(now) {
-      const elapsed = now - t0;
-
-      // Wheel always decelerates
-      wheelAngle += wVel;
-      wVel *= 0.9985;
-
-      if (!dropped) {
-        // Ball on outer track
-        ballAngle += bVel;
-        bVel *= (elapsed < dropDelay) ? 0.997 : 0.98;
-
-        // Start dropping when ball is slow enough or time elapsed
-        if (elapsed > dropDelay && Math.abs(bVel) < 0.04) {
-          dropped = true;
-        }
-      } else {
-        // Ball spiraling inward
-        ballAngle += bVel;
-        bVel *= 0.98;
-
-        const target = SLOT_MID;
-        ballRadius += (target - ballRadius) * 0.03;
-
-        // Bounce effect near slots
-        if (ballRadius < SLOT_OUTER && ballRadius > target - 5) {
-          ballRadius += Math.sin(elapsed * 0.025) * 3 * Math.max(0, Math.abs(bVel) / 0.01);
-        }
-
-        // Settled?
-        if (Math.abs(bVel) < 0.002 && Math.abs(ballRadius - target) < 4) {
-          settleCount++;
-        } else {
-          settleCount = 0;
-        }
-
-        if (settleCount > 20) {
-          ballRadius = target;
-          bVel = 0;
-
-          // Which slot?
-          const rel = ((ballAngle - wheelAngle) % (Math.PI * 2) + Math.PI * 4) % (Math.PI * 2);
-          const slotIdx = Math.floor(rel / SLOT_ANGLE) % NUM_SLOTS;
-          const isWhite = slotIdx % 2 === 0;
-          const winner = isWhite ? players[0] : players[1];
-          const cardId = isWhite ? "card0" : "card1";
-
-          // Lock ball to slot
-          ballAngle = wheelAngle + slotIdx * SLOT_ANGLE + SLOT_ANGLE / 2;
-
-          // Coast wheel to stop
-          function coast() {
-            if (wVel > 0.0003) {
-              wheelAngle += wVel;
-              wVel *= 0.992;
-              ballAngle = wheelAngle + slotIdx * SLOT_ANGLE + SLOT_ANGLE / 2;
-              draw();
-              requestAnimationFrame(coast);
-            } else {
-              wVel = 0;
-              draw();
-              spinning = false;
-              btn.disabled = false;
-
-              document.getElementById(cardId).classList.add("winner");
-              resultEl.textContent = winner.name.toUpperCase() + " venceu!";
-              resultEl.classList.add("show");
-              launchConfetti();
-              setTimeout(() => showCelebration(winner.name), 1800);
-            }
-          }
-          coast();
-          return;
-        }
+      for (let i = 0; i < runners.length; i++) {
+        positions[i] += Math.random() * 2 * stepBase;   // núcleo do sorteio (média = stepBase)
+        if (positions[i] > finishLine) positions[i] = finishLine;
+        runners[i].style.left = positions[i] + "px";
       }
 
-      draw();
+      // atualiza badge de posição ao vivo (1º/2º/3º)
+      order.forEach((o, place) => {
+        runners[o.i].querySelector(".pos-badge").textContent = ordinal[place];
+      });
+
+      // quem cruzou a linha neste frame?
+      const crossed = positions
+        .map((p, i) => ({ i, p }))
+        .filter(o => o.p >= finishLine);
+
+      if (crossed.length > 0) {
+        // vencedor = quem mais andou; se houver empate EXATO de distância, sorteia entre eles.
+        // isso elimina o privilégio do índice 0 (antes o Rafael sempre vencia empates de frame).
+        const maxP = Math.max(...crossed.map(o => o.p));
+        const tied = crossed.filter(o => o.p === maxP);
+        const winnerIdx = tied[Math.floor(Math.random() * tied.length)].i;
+
+        running = false;
+        btn.disabled = false;
+        runners.forEach(r => r.classList.remove("run"));
+
+        const name = players[winnerIdx].name;
+        resultEl.textContent = name.toUpperCase() + " venceu!";
+        resultEl.classList.add("show");
+        launchConfetti();
+        setTimeout(showScoreboard, 1400);
+        return;
+      }
       requestAnimationFrame(tick);
     }
-
     requestAnimationFrame(tick);
-  });
+  }
 
-  document.getElementById("closeBtn").addEventListener("click", function () {
-    document.getElementById("celebration").classList.remove("active");
+  btn.addEventListener("click", startRace);
+  document.getElementById("sbClose").addEventListener("click", function () {
+    document.getElementById("scoreboard").classList.remove("active");
+    reset();
   });
 })();
 </script>
