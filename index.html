@@ -3,380 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Corrida - Baricup 26</title>
+<title>Plinko - Baricup 26</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
     font-family: 'Outfit', sans-serif;
-    background: #0b0d10;
-    color: #fff;
-    overflow-x: hidden;
-    position: relative;
+    background: #0b0d10; color: #fff;
+    overflow-x: hidden; position: relative;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: radial-gradient(circle 2px at center, rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 18px 18px; pointer-events: none;
   }
 
   .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-    width: 100%;
-    max-width: 1000px;
-    padding: 1.5rem;
-    z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 1.2rem; z-index: 1; width: 100%; max-width: 760px; padding: 1.5rem;
   }
-
   .logo-area { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; }
+  .title { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 0.08em; line-height: 1; text-transform: uppercase; }
+  .subtitle { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.25em; text-transform: uppercase; opacity: 0.4; }
+  .divider { width: 200px; height: 2px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); margin: 0.1rem 0; }
 
-  .title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.4rem;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-
-  .subtitle {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    opacity: 0.4;
-  }
-
-  .divider {
-    width: 200px; height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    margin: 0.1rem 0;
-  }
-
-  /* ===== CENÁRIO ===== */
-  .scene {
+  .board-wrap {
     position: relative;
-    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 2px solid rgba(255,255,255,0.1);
     border-radius: 12px;
-    overflow: hidden;
-    border: 2px solid rgba(0,0,0,0.5);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    padding: 12px;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.5);
   }
+  canvas#plinko { display: block; border-radius: 8px; }
 
-  .sky {
-    position: relative;
-    height: 110px;
-    background: linear-gradient(#7ec8f0 0%, #aee0f5 55%, #d8f0e0 100%);
-    overflow: hidden;
+  /* legenda com as cores */
+  .legend {
+    display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center; margin-top: 0.2rem;
   }
-
-  .sun {
-    position: absolute;
-    top: 18px; right: 80px;
-    width: 46px; height: 46px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 40%, #fff7d6, #ffe16b);
-    box-shadow: 0 0 30px rgba(255,225,107,0.8);
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem;
+    letter-spacing: 0.04em; text-transform: uppercase;
   }
-
-  .mountains {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 60px;
-    background:
-      radial-gradient(60px 50px at 15% 100%, #6fae7a 60%, transparent 61%),
-      radial-gradient(80px 60px at 38% 100%, #5fa06c 60%, transparent 61%),
-      radial-gradient(70px 55px at 62% 100%, #6fae7a 60%, transparent 61%),
-      radial-gradient(90px 65px at 85% 100%, #5fa06c 60%, transparent 61%);
-  }
-
-  /* arquibancada simplificada */
-  .stand {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 26px;
-    background: repeating-linear-gradient(90deg,
-      #c94f4f 0 14px, #e0e0e0 14px 28px);
-    opacity: 0.7;
-    border-top: 3px solid #fff;
-  }
-
-  .rail {
-    height: 14px;
-    background: #f4f4f4;
-    border-top: 2px solid #cfcfcf;
-    border-bottom: 4px solid #2f6b3a;
-    position: relative;
-  }
-  .rail::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(90deg,
-      rgba(0,0,0,0.12) 0 2px, transparent 2px 48px);
-  }
-
-  /* gramado / pista */
-  .turf {
-    position: relative;
-    background: repeating-linear-gradient(90deg,
-      #2f8a45 0 40px, #2b8040 40px 80px);
-    padding: 10px 0;
-  }
-
-  /* linha de chegada */
-  .finish-flag {
-    position: absolute;
-    top: 0; bottom: 0;
-    right: 64px;
-    width: 10px;
-    background:
-      repeating-linear-gradient(45deg, #fff 0 5px, #111 5px 10px);
-    z-index: 4;
-    box-shadow: 0 0 8px rgba(0,0,0,0.4);
-  }
-  .finish-flag::before {
-    content: 'CHEGADA';
-    position: absolute;
-    top: -2px; left: 14px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    color: #fff;
-    text-shadow: 0 1px 2px #000;
-    writing-mode: vertical-rl;
-  }
-
-  .lane {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin: 2px 0;
-  }
-
-  .lane-label {
-    width: 160px;
-    flex-shrink: 0;
-    padding-left: 12px;
-    font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .lane-label .silk {
-    width: 12px; height: 12px;
-    border-radius: 3px;
-    border: 1px solid rgba(255,255,255,0.6);
-    flex-shrink: 0;
-  }
-
-  .lane-track {
-    position: relative;
-    flex: 1;
-    height: 100%;
-  }
-
-  /* cada raia: profundidade fake (de cima=longe/menor pra baixo=perto/maior) */
-  .lane[data-depth="0"] { height: 56px; }
-  .lane[data-depth="1"] { height: 62px; }
-  .lane[data-depth="2"] { height: 70px; }
-  .lane[data-depth="0"] .lane-label { font-size: 1.0rem;  opacity: 0.9; }
-  .lane[data-depth="1"] .lane-label { font-size: 1.12rem; }
-  .lane[data-depth="2"] .lane-label { font-size: 1.24rem; }
-
-  .runner {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    will-change: left;
-  }
-  .lane[data-depth="0"] .runner svg { width: 64px;  height: 46px; }
-  .lane[data-depth="1"] .runner svg { width: 74px;  height: 52px; }
-  .lane[data-depth="2"] .runner svg { width: 86px;  height: 60px; }
-
-  .runner svg { display: block; filter: drop-shadow(0 4px 3px rgba(0,0,0,0.4)); }
-
-  /* galope: corpo balança, pernas alternam */
-  .runner.run .body  { animation: gallopBody 0.28s ease-in-out infinite alternate; transform-origin: 50% 80%; }
-  .runner.run .legA  { animation: legSwingA 0.28s linear infinite; transform-origin: top center; }
-  .runner.run .legB  { animation: legSwingB 0.28s linear infinite; transform-origin: top center; }
-
-  @keyframes gallopBody {
-    0%   { transform: translateY(0)    rotate(-2deg); }
-    100% { transform: translateY(-3px) rotate(2deg); }
-  }
-  @keyframes legSwingA {
-    0%,100% { transform: rotate(28deg); }
-    50%     { transform: rotate(-28deg); }
-  }
-  @keyframes legSwingB {
-    0%,100% { transform: rotate(-28deg); }
-    50%     { transform: rotate(28deg); }
-  }
-
-  /* badge de posição ao vivo */
-  .pos-badge {
-    position: absolute;
-    top: -8px; right: -4px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.78rem;
-    background: rgba(0,0,0,0.75);
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius: 10px;
-    padding: 0 6px;
-    line-height: 16px;
-    color: #ffd700;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .runner.show-pos .pos-badge { opacity: 1; }
+  .legend-item .swatch { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.5); }
 
   .result {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.8rem;
-    letter-spacing: 0.06em;
-    min-height: 2.2rem;
-    text-align: center;
-    color: #ffd700;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.5s, transform 0.5s;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.06em;
+    min-height: 2.2rem; text-align: center; color: #ffd700;
+    opacity: 0; transform: translateY(8px); transition: opacity 0.5s, transform 0.5s;
   }
   .result.show { opacity: 1; transform: translateY(0); }
 
   .spin-btn {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 0.12em;
-    padding: 12px 48px;
-    border: 2px solid #fff;
-    border-radius: 4px;
-    cursor: pointer;
-    background: transparent;
-    color: #fff;
-    text-transform: uppercase;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.12em;
+    padding: 12px 48px; border: 2px solid #fff; border-radius: 4px; cursor: pointer;
+    background: transparent; color: #fff; text-transform: uppercase;
     transition: transform 0.2s, background 0.2s, color 0.2s;
   }
   .spin-btn:hover:not(:disabled) { background: #fff; color: #111; transform: scale(1.03); }
   .spin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .footer {
-    display: flex; align-items: center; gap: 1.2rem;
-    margin-top: 0.2rem;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 0.9rem; letter-spacing: 0.15em; opacity: 0.35;
-    text-transform: uppercase;
+    display: flex; align-items: center; gap: 1.2rem; margin-top: 0.2rem;
+    font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem; letter-spacing: 0.15em; opacity: 0.35; text-transform: uppercase;
   }
   .footer .dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; }
 
-  /* ===== PLACAR ESTILO HIPÓDROMO (inspirado na foto) ===== */
-  .scoreboard-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 200;
-    opacity: 0; pointer-events: none;
-    transition: opacity 0.5s;
+  .celebration-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.6s;
   }
-  .scoreboard-overlay.active { opacity: 1; pointer-events: auto; }
+  .celebration-overlay.active { opacity: 1; pointer-events: auto; }
+  .celebration-overlay .trophy { font-size: 4rem; margin-bottom: 1rem; animation: trophyBounce 0.8s ease infinite alternate; }
+  @keyframes trophyBounce { 0% { transform: scale(1) rotate(-5deg); } 100% { transform: scale(1.1) rotate(5deg); } }
+  .celebration-overlay .congrats-title { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: #ffd700; text-transform: uppercase; margin-bottom: 0.5rem; opacity: 0; }
+  .celebration-overlay .winner-name-big { font-family: 'Bebas Neue', sans-serif; font-size: 3.8rem; color: #fff; text-transform: uppercase; margin-bottom: 1.5rem; opacity: 0; }
+  .celebration-overlay .prize-text { font-family: 'Outfit', sans-serif; font-size: 1.3rem; color: #fff; text-align: center; line-height: 1.6; max-width: 500px; opacity: 0; }
+  .celebration-overlay .prize-highlight { color: #ffd700; font-weight: 800; }
+  .celebration-overlay .close-btn {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.12em;
+    padding: 12px 40px; border: 2px solid rgba(255,255,255,0.3); border-radius: 4px; cursor: pointer;
+    background: transparent; color: #fff; text-transform: uppercase; margin-top: 2rem; opacity: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .celebration-overlay .close-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.6); }
+  @keyframes popIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes slideUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
 
-  .scoreboard {
-    width: 460px;
-    max-width: 90vw;
-    background: #050a06;
-    border: 3px solid #1d3a24;
-    border-radius: 10px;
-    padding: 22px 26px 26px;
-    box-shadow: 0 0 50px rgba(0, 255, 100, 0.15);
-    font-family: 'Bebas Neue', sans-serif;
-  }
-
-  .sb-header {
-    text-align: center;
-    font-size: 1.6rem;
-    letter-spacing: 0.1em;
-    color: #fff;
-    margin-bottom: 0.2rem;
-  }
-  .sb-header span { color: #38e06a; }
-
-  .sb-sub {
-    text-align: center;
-    font-size: 0.9rem;
-    letter-spacing: 0.2em;
-    color: #5f8f6c;
-    margin-bottom: 1rem;
-  }
-
-  .sb-row {
-    display: flex; align-items: center;
-    padding: 9px 4px;
-    border-bottom: 1px solid rgba(56,224,106,0.12);
-    font-size: 1.25rem;
-    letter-spacing: 0.04em;
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-  .sb-row.in { animation: rowIn 0.4s ease forwards; }
-
-  @keyframes rowIn { to { opacity: 1; transform: translateX(0); } }
-
-  .sb-row .silk {
-    width: 16px; height: 16px;
-    border-radius: 3px;
-    margin-right: 12px;
-    border: 1px solid rgba(255,255,255,0.5);
-    flex-shrink: 0;
-  }
-  .sb-row .name { flex: 1; color: #d8ffe2; }
-  .sb-row .place { color: #38e06a; font-size: 1.1rem; }
-  .sb-row.first .name { color: #ffd700; }
-  .sb-row.first .place { color: #ffd700; }
-
-  .sb-prize {
-    text-align: center;
-    margin-top: 1.2rem;
-    font-size: 1.5rem;
-    letter-spacing: 0.06em;
-    color: #fff;
-    opacity: 0;
-  }
-  .sb-prize.in { animation: rowIn 0.5s ease forwards; }
-  .sb-prize .hl { color: #ffd700; display: block; font-size: 1.7rem; margin-top: 2px; }
-
-  .sb-close {
-    display: block;
-    margin: 1.4rem auto 0;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem; letter-spacing: 0.12em;
-    padding: 10px 36px;
-    border: 2px solid rgba(56,224,106,0.4);
-    border-radius: 4px;
-    background: transparent;
-    color: #d8ffe2;
-    text-transform: uppercase;
-    cursor: pointer;
-    opacity: 0;
-  }
-  .sb-close.in { animation: rowIn 0.4s ease forwards; }
-  .sb-close:hover { background: rgba(56,224,106,0.1); }
-
-  .confetti-piece {
-    position: fixed; pointer-events: none; z-index: 300;
-    animation: confettiFall linear forwards;
-  }
-  @keyframes confettiFall {
-    0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
-    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
-  }
+  .confetti-piece { position: fixed; pointer-events: none; z-index: 300; animation: confettiFall linear forwards; }
+  @keyframes confettiFall { 0% { opacity: 1; transform: translateY(0) rotate(0deg); } 100% { opacity: 0; transform: translateY(100vh) rotate(720deg); } }
 </style>
 </head>
 <body>
@@ -385,125 +106,164 @@
   <div class="logo-area">
     <div class="title">Baricup 26</div>
     <div class="divider"></div>
-    <div class="subtitle">Corrida oficial</div>
+    <div class="subtitle">Plinko oficial</div>
   </div>
 
-  <div class="scene" id="scene">
-    <div class="sky">
-      <div class="sun"></div>
-      <div class="mountains"></div>
-      <div class="stand"></div>
-    </div>
-    <div class="rail"></div>
-
-    <div class="turf" id="turf">
-      <div class="finish-flag"></div>
-
-      <div class="lane" data-depth="0">
-        <div class="lane-label"><span class="silk" style="background:#3aa0ff"></span>Rafael Augusto</div>
-        <div class="lane-track"><div class="runner" data-idx="0"></div></div>
-      </div>
-      <div class="lane" data-depth="1">
-        <div class="lane-label"><span class="silk" style="background:#ff5b8a"></span>Kelly Nascimento</div>
-        <div class="lane-track"><div class="runner" data-idx="1"></div></div>
-      </div>
-      <div class="lane" data-depth="2">
-        <div class="lane-label"><span class="silk" style="background:#ffd54a"></span>Gabriel Sostak</div>
-        <div class="lane-track"><div class="runner" data-idx="2"></div></div>
-      </div>
-    </div>
+  <div class="board-wrap">
+    <canvas id="plinko" width="720" height="440"></canvas>
   </div>
+
+  <div class="legend" id="legend"></div>
 
   <div class="result" id="result"></div>
-  <button class="spin-btn" id="startBtn">Largada!</button>
+  <button class="spin-btn" id="startBtn">Soltar as bolinhas</button>
 
-  <div class="footer">
-    <span>CWB</span><div class="dot"></div><span>IMOB</span>
-  </div>
+  <div class="footer"><span>CWB</span><div class="dot"></div><span>IMOB</span></div>
 </div>
 
-<div class="scoreboard-overlay" id="scoreboard">
-  <div class="scoreboard">
-    <div class="sb-header">PRÊMIO: <span>CAMISA OFICIAL</span></div>
-    <div class="sb-sub">RESULTADO DA CORRIDA</div>
-    <div id="sbRows"></div>
-    <div class="sb-prize" id="sbPrize">
-      O vencedor leva a
-      <span class="hl">Camisa Oficial da Seleção Brasileira</span>
-    </div>
-    <button class="sb-close" id="sbClose">Voltar</button>
+<div class="celebration-overlay" id="celebration">
+  <div class="trophy">🏆</div>
+  <div class="congrats-title" id="congratsTitle">Parabéns!</div>
+  <div class="winner-name-big" id="winnerName"></div>
+  <div class="prize-text" id="prizeText">
+    Você ganhou uma<br><span class="prize-highlight">camisa oficial da Seleção Brasileira!</span>
   </div>
+  <button class="close-btn" id="closeBtn">Voltar</button>
 </div>
 
 <script>
 (function () {
-  // nome + cor da "silk" (capa do jóquei), usada na raia e no placar
+  // nome + cor de cada competidor
   const players = [
-    { name: "Rafael Augusto",   color: "#3aa0ff" },
-    { name: "Kelly Nascimento", color: "#ff5b8a" },
-    { name: "Gabriel Sostak",   color: "#ffd54a" }
+    { name: "Caique Gomes",             color: "#3aa0ff" },
+    { name: "Danielle Yonamine",        color: "#ff5b8a" },
+    { name: "Anna Vitoria da Silveira", color: "#ffd54a" },
+    { name: "Brendom Souza",            color: "#4ade80" }
   ];
 
-  // SVG de cavalo desenhado inline (galope via CSS nos grupos .body/.legA/.legB)
-  function horseSVG(color) {
-    return `
-      <svg viewBox="0 0 120 84" xmlns="http://www.w3.org/2000/svg">
-        <g class="body">
-          <!-- pernas (animam) -->
-          <rect class="legA" x="34" y="44" width="7" height="26" rx="3" fill="#5a3a22"/>
-          <rect class="legB" x="74" y="44" width="7" height="26" rx="3" fill="#4a2f1b"/>
-          <rect class="legB" x="44" y="44" width="7" height="26" rx="3" fill="#4a2f1b"/>
-          <rect class="legA" x="64" y="44" width="7" height="26" rx="3" fill="#5a3a22"/>
-          <!-- corpo -->
-          <ellipse cx="58" cy="40" rx="34" ry="17" fill="#6b4226"/>
-          <!-- garupa/cauda -->
-          <path d="M24 36 q-14 0 -18 16 q10 -6 18 -2 z" fill="#3a2616"/>
-          <!-- pescoço + cabeça -->
-          <path d="M82 38 q14 -4 20 -22 l8 4 q-2 16 -16 26 z" fill="#6b4226"/>
-          <path d="M104 18 l12 2 l-4 12 l-10 -4 z" fill="#5a3a22"/>
-          <!-- crina -->
-          <path d="M82 22 q10 -2 18 -10 q-2 8 -8 14 z" fill="#3a2616"/>
-          <!-- silk do jóquei (cor do competidor) -->
-          <ellipse cx="60" cy="30" rx="12" ry="9" fill="${color}"/>
-          <circle cx="66" cy="22" r="6" fill="#f1c9a5"/>
-          <!-- olho -->
-          <circle cx="110" cy="24" r="1.6" fill="#111"/>
-        </g>
-      </svg>`;
-  }
-
-  const runners = Array.from(document.querySelectorAll(".runner"));
-  runners.forEach((r, i) => {
-    r.innerHTML = horseSVG(players[i].color) + '<span class="pos-badge"></span>';
-  });
-
+  const canvas = document.getElementById("plinko");
+  const ctx = canvas.getContext("2d");
   const btn = document.getElementById("startBtn");
   const resultEl = document.getElementById("result");
 
+  const W = canvas.width, H = canvas.height;
+  const N = players.length;              // 4 colunas
+  const colW = W / N;                    // largura de cada faixa
+  const TOP = 30;                        // onde as bolinhas começam
+  const BOTTOM = H - 34;                 // linha de chegada
+  const BALL_R = 9;
+  const PEG_R = 4;
+
+  // legenda
+  const legendEl = document.getElementById("legend");
+  players.forEach(p => {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = `<span class="swatch" style="background:${p.color}"></span>${p.name}`;
+    legendEl.appendChild(item);
+  });
+
+  // ==== PINOS: grade triangular densa por faixa (estilo Galton board) ====
+  // linhas alternam meio-passo no X, e os pinos são próximos o bastante para a
+  // bolinha bater em uma a cada linha — é isso que gera o ziguezague constante.
+  const ROWS = 12;
+  const rowGap = (BOTTOM - TOP - 55) / ROWS;
+  const pegs = [];                       // {x, y, lane}
+  const pegCols = 4;                     // pinos por linha, dentro da faixa
+  for (let c = 0; c < N; c++) {
+    const laneLeft = c * colW;
+    const usable = colW - 24;            // margem interna
+    const pegGap = usable / pegCols;
+    for (let r = 0; r < ROWS; r++) {
+      const y = TOP + 45 + r * rowGap;
+      const shift = (r % 2 === 0) ? 0 : pegGap / 2;   // meio-passo alternado
+      for (let k = 0; k <= pegCols; k++) {
+        const x = laneLeft + 12 + k * pegGap + shift - pegGap / 2;
+        // mantém dentro da faixa
+        if (x > laneLeft + 8 && x < laneLeft + colW - 8) {
+          pegs.push({ x, y, lane: c });
+        }
+      }
+    }
+  }
+
+  let balls = [];
   let running = false;
-  let positions = [0, 0, 0];
-  let finishLine = 0;
-  let stepBase = 0;            // passo médio por frame, calculado p/ durar ~RACE_SECONDS
+  let winnerIdx = null;
 
-  const RACE_SECONDS = 10;     // duração-alvo da corrida
-  const FPS = 60;              // requestAnimationFrame ~ 60 fps
-
-  const ordinal = ["1º", "2º", "3º"];
-
-  function computeFinish() {
-    const lt = document.querySelector('.lane[data-depth="2"] .lane-track');
-    return lt.clientWidth - 70; // desconta a largura do cavalo
+  // cada pessoa fica FIXA na sua coluna
+  // assim a cor/posição da bolinha sempre corresponde ao nome mostrado.
+  // (o viés de coluna é desprezível com 4 faixas idênticas + física caótica dos pinos.)
+  function makeBalls() {
+    balls = players.map((p, i) => ({
+      idx: i,                       // identidade da pessoa
+      lane: i,                      // coluna fixa = índice
+      x: i * colW + colW / 2,
+      y: TOP,
+      vx: 0,
+      vy: 0,
+      color: p.color,
+      done: false,
+      finishTime: null
+    }));
   }
 
-  function reset() {
-    positions = [0, 0, 0];
-    runners.forEach(r => {
-      r.style.left = "0px";
-      r.classList.remove("run", "show-pos");
-    });
-    resultEl.classList.remove("show");
-    resultEl.textContent = "";
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // faixas
+    for (let c = 0; c < N; c++) {
+      ctx.fillStyle = c % 2 === 0 ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)";
+      ctx.fillRect(c * colW, 0, colW, H);
+      // divisória
+      if (c > 0) {
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(c * colW, 0); ctx.lineTo(c * colW, H); ctx.stroke();
+      }
+    }
+
+    // linha de chegada
+    ctx.strokeStyle = "rgba(255,215,0,0.6)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath(); ctx.moveTo(0, BOTTOM); ctx.lineTo(W, BOTTOM); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(255,215,0,0.7)";
+    ctx.font = "12px 'Bebas Neue', sans-serif";
+    ctx.fillText("CHEGADA", 6, BOTTOM - 6);
+
+    // pinos
+    for (const peg of pegs) {
+      ctx.beginPath();
+      ctx.arc(peg.x, peg.y, PEG_R, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.fill();
+    }
+
+    // bolinhas
+    for (const b of balls) {
+      ctx.beginPath();
+      ctx.arc(b.x + 1.5, b.y + 2, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.4)";
+      ctx.fill();
+
+      const g = ctx.createRadialGradient(b.x - 3, b.y - 3, 1, b.x, b.y, BALL_R);
+      g.addColorStop(0, "#fff");
+      g.addColorStop(0.4, b.color);
+      g.addColorStop(1, b.color);
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
   }
+
+  makeBalls();
+  draw();
 
   function launchConfetti() {
     const colors = ["#009c3b", "#ffdf00", "#002776", "#ffffff", "#009c3b", "#ffdf00"];
@@ -523,87 +283,110 @@
     }
   }
 
-  // monta o placar final ordenando pela distância percorrida
-  function showScoreboard() {
-    const ranking = positions
-      .map((p, i) => ({ i, p }))
-      .sort((a, b) => b.p - a.p);
-
-    const rowsEl = document.getElementById("sbRows");
-    rowsEl.innerHTML = "";
-    ranking.forEach((r, place) => {
-      const pl = players[r.i];
-      const div = document.createElement("div");
-      div.className = "sb-row" + (place === 0 ? " first" : "");
-      div.innerHTML =
-        `<span class="silk" style="background:${pl.color}"></span>` +
-        `<span class="name">${pl.name}</span>` +
-        `<span class="place">${ordinal[place]}</span>`;
-      rowsEl.appendChild(div);
-      setTimeout(() => div.classList.add("in"), 200 + place * 220);
-    });
-
-    const prize = document.getElementById("sbPrize");
-    const close = document.getElementById("sbClose");
-    prize.classList.remove("in"); close.classList.remove("in");
-    void prize.offsetWidth;
-    setTimeout(() => prize.classList.add("in"), 200 + ranking.length * 220 + 150);
-    setTimeout(() => close.classList.add("in"), 200 + ranking.length * 220 + 400);
-
-    document.getElementById("scoreboard").classList.add("active");
+  function showCelebration(name) {
+    document.getElementById("winnerName").textContent = name.toUpperCase();
+    const overlay = document.getElementById("celebration");
+    const ct = document.getElementById("congratsTitle");
+    const wn = document.getElementById("winnerName");
+    const pt = document.getElementById("prizeText");
+    const cb = document.getElementById("closeBtn");
+    [ct, wn, pt, cb].forEach(el => el.style.animation = "none");
+    void ct.offsetWidth;
+    ct.style.animation = "popIn 0.5s ease 0.3s forwards";
+    wn.style.animation = "slideUp 0.5s ease 0.6s forwards";
+    pt.style.animation = "slideUp 0.5s ease 0.9s forwards";
+    cb.style.animation = "slideUp 0.5s ease 1.2s forwards";
+    overlay.classList.add("active");
     launchConfetti();
-    setTimeout(launchConfetti, 900);
-    setTimeout(launchConfetti, 1800);
+    setTimeout(launchConfetti, 800);
+    setTimeout(launchConfetti, 1600);
   }
 
-  function startRace() {
+  function start() {
     if (running) return;
     running = true;
     btn.disabled = true;
-    reset();
-    finishLine = computeFinish();
-    // passo médio p/ o líder cruzar em ~RACE_SECONDS, independente do tamanho da tela.
-    // o líder anda um pouco acima da média, então dividimos por ~0.85 dos frames totais.
-    stepBase = finishLine / (RACE_SECONDS * FPS * 0.85);
-    runners.forEach(r => r.classList.add("run", "show-pos"));
+    resultEl.classList.remove("show");
+    resultEl.textContent = "";
+    makeBalls();
+
+    // Sem sorteio nos bastidores: o vencedor é quem cruzar a linha primeiro.
+    // A justiça vem de duas fontes aleatórias combinadas: a coluna de cada pessoa
+    // é embaralhada (makeBalls) e a física do quique é caótica. Ninguém acumula vantagem.
+    winnerIdx = null;
+
+    // mesma gravidade para todas as bolinhas
+    const G_BASE = 0.09;   // gravidade: menor = queda mais lenta (era 0.24)
+
+    let finishedCount = 0;
+    const finishOrder = [];
 
     function tick() {
-      let order = positions
-        .map((p, i) => ({ i, p }))
-        .sort((a, b) => b.p - a.p);
+      for (const b of balls) {
+        if (b.done) continue;
 
-      for (let i = 0; i < runners.length; i++) {
-        positions[i] += Math.random() * 2 * stepBase;   // núcleo do sorteio (média = stepBase)
-        if (positions[i] > finishLine) positions[i] = finishLine;
-        runners[i].style.left = positions[i] + "px";
+        b.vy += G_BASE;
+        b.vx *= 0.94;                 // atrito horizontal
+        // teto na velocidade lateral pra não disparar entre as paredes
+        const VX_MAX = 3.0;   // teto lateral, reduzido junto com a gravidade (era 4.5)
+        if (b.vx > VX_MAX) b.vx = VX_MAX;
+        if (b.vx < -VX_MAX) b.vx = -VX_MAX;
+        b.y += b.vy;
+        b.x += b.vx;
+
+        // colisão com pinos da própria faixa
+        for (const peg of pegs) {
+          if (peg.lane !== b.lane) continue;
+          const dx = b.x - peg.x, dy = b.y - peg.y;
+          const dist = Math.hypot(dx, dy);
+          const minDist = BALL_R + PEG_R;
+          if (dist < minDist && dist > 0) {
+            // empurra pra fora ao longo da normal do contato (deflexão real)
+            const nx = dx / dist, ny = dy / dist;
+            const overlap = minDist - dist;
+            b.x += nx * overlap;
+            b.y += ny * overlap;
+            // kick lateral forte pro lado do contato + aleatoriedade pequena
+            const side = nx >= 0 ? 1 : -1;
+            b.vx += side * (2.0 + Math.random() * 1.4);
+            // mantém boa parte da velocidade vertical (bate mas continua caindo)
+            b.vy *= 0.72;
+          }
+        }
+
+        // paredes da faixa
+        const left = b.lane * colW + BALL_R + 4;
+        const right = (b.lane + 1) * colW - BALL_R - 4;
+        if (b.x < left) { b.x = left; b.vx = Math.abs(b.vx) * 0.35; }
+        if (b.x > right) { b.x = right; b.vx = -Math.abs(b.vx) * 0.35; }
+
+        // chegou? marca; o vencedor do frame é decidido depois do loop.
+        if (b.y >= BOTTOM - BALL_R) {
+          b.y = BOTTOM - BALL_R;
+          b.done = true;
+          finishOrder.push(b);
+          finishedCount++;
+        }
       }
 
-      // atualiza badge de posição ao vivo (1º/2º/3º)
-      order.forEach((o, place) => {
-        runners[o.i].querySelector(".pos-badge").textContent = ordinal[place];
-      });
+      draw();
 
-      // quem cruzou a linha neste frame?
-      const crossed = positions
-        .map((p, i) => ({ i, p }))
-        .filter(o => o.p >= finishLine);
+      // decide o vencedor sem viés de ordem do array:
+      // entre quem cruzou, ganha quem foi mais fundo; empate exato -> sorteio.
+      if (winnerIdx === null && finishOrder.length > 0) {
+        const maxY = Math.max(...finishOrder.map(b => b.y));
+        const tied = finishOrder.filter(b => b.y === maxY);
+        winnerIdx = tied[Math.floor(Math.random() * tied.length)].idx;
+      }
 
-      if (crossed.length > 0) {
-        // vencedor = quem mais andou; se houver empate EXATO de distância, sorteia entre eles.
-        // isso elimina o privilégio do índice 0 (antes o Rafael sempre vencia empates de frame).
-        const maxP = Math.max(...crossed.map(o => o.p));
-        const tied = crossed.filter(o => o.p === maxP);
-        const winnerIdx = tied[Math.floor(Math.random() * tied.length)].i;
-
+      if (winnerIdx !== null) {
         running = false;
         btn.disabled = false;
-        runners.forEach(r => r.classList.remove("run"));
-
         const name = players[winnerIdx].name;
         resultEl.textContent = name.toUpperCase() + " venceu!";
         resultEl.classList.add("show");
         launchConfetti();
-        setTimeout(showScoreboard, 1400);
+        setTimeout(() => showCelebration(name), 1400);
         return;
       }
       requestAnimationFrame(tick);
@@ -611,10 +394,11 @@
     requestAnimationFrame(tick);
   }
 
-  btn.addEventListener("click", startRace);
-  document.getElementById("sbClose").addEventListener("click", function () {
-    document.getElementById("scoreboard").classList.remove("active");
-    reset();
+  btn.addEventListener("click", start);
+  document.getElementById("closeBtn").addEventListener("click", function () {
+    document.getElementById("celebration").classList.remove("active");
+    makeBalls();
+    draw();
   });
 })();
 </script>
